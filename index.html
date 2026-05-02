@@ -476,10 +476,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
       <div style="padding:0 20px 20px"><div id="tal-list"></div></div>
     </div>
 
-    <!-- SİPARİŞLER -->
-    <div id="pg-sip" class="pg">
-      <div class="ph"><div class="pt">Siparişler</div></div>
-      <div class="sp mb"><div class="card" id="sip-list"></div></div>
+    <!-- MESAJLAR -->
+    <div id="pg-msg" class="pg">
+      <div class="ph"><div class="pt">Mesajlar</div></div>
+      <div class="sp mb"><div id="konusma-list"></div></div>
     </div>
 
     <!-- PROFİL -->
@@ -550,9 +550,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
       <svg viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414A1 1 0 0 1 19 9.414V19a2 2 0 0 1-2 2z"/></svg>
       Talepler<div class="ni-badge" id="nb-tal"></div>
     </button>
-    <button class="ni" id="ni-sip" onclick="gp('sip')">
-      <svg viewBox="0 0 24 24"><path d="M5 8h14M5 12h14M5 16h6"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg>
-      Siparişler
+    <button class="ni" id="ni-msg" onclick="gp('msg')">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Mesajlar<div class="ni-badge" id="nb-msg"></div>
     </button>
     <button class="ni" id="ni-profil" onclick="gp('profil')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
@@ -568,6 +568,18 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 <div class="sheet" id="ts"><div class="shandle"></div><div id="ts-c"></div></div>
 <div class="ov" id="ss-ov" onclick="cs('ss')"></div>
 <div class="sheet" id="ss"><div class="shandle"></div><div id="ss-c"></div></div>
+<!-- MESAJ SHEET -->
+<div class="ov" id="ms-ov" onclick="cs('ms')"></div>
+<div class="sheet" id="ms" style="height:92dvh;display:flex;flex-direction:column">
+  <div class="shandle"></div>
+  <div id="ms-header" style="padding:0 18px 14px;border-bottom:1px solid var(--border);flex-shrink:0"></div>
+  <div id="ms-msgs" style="flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:10px;background:var(--cream2)"></div>
+  <div style="padding:12px 18px max(16px,env(safe-area-inset-bottom));border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;background:var(--white)">
+    <input id="ms-input" type="text" placeholder="Mesaj yaz..." style="flex:1;border:1px solid var(--border);border-radius:24px;padding:10px 16px;font-family:inherit;font-size:14px;outline:none;background:var(--cream2)" onkeydown="if(event.key==='Enter')sendMsg()">
+    <button onclick="sendMsg()" style="background:var(--teal);color:#fff;border:none;border-radius:50%;width:40px;height:40px;cursor:pointer;font-size:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center">&#8593;</button>
+  </div>
+</div>
+
 
 <!-- YENİ TALEP -->
 <div class="mov" id="m-yeni" onclick="if(event.target===this)cm('m-yeni')">
@@ -829,7 +841,8 @@ function startApp(){
   document.getElementById('bakiye-chip').style.display=m?'none':'';
   document.getElementById('tal-title').textContent=m?'Üretim Taleplerim':'Açık Talepler';
   if(!m)loadBakiye();
-  gp('dash');rProducers();
+  gp('dash');
+  if(m)rProducers();
 }
 
 function gp(id){
@@ -839,7 +852,7 @@ function gp(id){
   const ni=document.getElementById('ni-'+id);if(ni)ni.classList.add('on');
   if(id==='dash')rDash();
   if(id==='tal')rTalepler();
-  if(id==='sip')rSiparisler();
+  if(id==='msg')rMesajlar();
   if(id==='profil')rProfil();
 }
 
@@ -939,6 +952,8 @@ function openProducer(pid){
 // DASHBOARD
 async function rDash(){
   const m=PROFILE.role==='marka';
+  // Üretici için dashboard = açık talepler grid
+  if(!m){await rUreticiDash();return;}
   const [talepler,siparisler]=await Promise.all([getTalepler(),getSiparisler()]);
   const stats=m?[
     {l:'Yeni teklif',v:talepler.filter(t=>t.status==='offered').length,hi:talepler.some(t=>t.status==='offered'),s:'Onay bekliyor'},
@@ -1195,6 +1210,157 @@ async function doAccept(talepId,teklifId){
 }
 
 // SİPARİŞLER
+
+// MESAJLAŞMA
+let _aktifKonusma = null;
+
+async function baslatKonusma(talepId, tkData){
+  const fb=getFB();
+  try{
+    const tSnap=await fb.getDoc(fb.doc(fb.db,'talepler',talepId));
+    const talep=tSnap.data();
+    // Konuşma var mı kontrol et
+    const q=fb.query(fb.collection(fb.db,'konusmalar'),
+      fb.where('talep_id','==',talepId),
+      fb.where('uretici_id','==',ME.uid));
+    const existing=await fb.getDocs(q);
+    let konusmaId;
+    if(existing.empty){
+      const ref=await fb.addDoc(fb.collection(fb.db,'konusmalar'),{
+        talep_id:talepId,
+        marka_id:talep.user_id,
+        marka_adi:talep.marka_adi,
+        uretici_id:ME.uid,
+        uretici_adi:PROFILE.name,
+        urun:talep.urun,
+        son_mesaj:'Teklif gönderildi',
+        son_mesaj_zaman:fb.serverTimestamp(),
+        okunmadi_marka:1,
+        okunmadi_uretici:0,
+        createdAt:fb.serverTimestamp()
+      });
+      konusmaId=ref.id;
+      // İlk mesaj - teklif detayı
+      await fb.addDoc(fb.collection(fb.db,'mesajlar'),{
+        konusma_id:konusmaId,
+        gonderen_id:ME.uid,
+        gonderen_adi:PROFILE.name,
+        tip:'teklif',
+        icerik:'Teklif: '+fmt(tkData.fiyat)+' /adet, '+tkData.gun+' gun teslim'+(tkData.notlar?' - '+tkData.notlar:''),
+        createdAt:fb.serverTimestamp()
+      });
+    } else {
+      konusmaId=existing.docs[0].id;
+    }
+    return konusmaId;
+  }catch(e){console.error(e);}
+}
+
+async function rMesajlar(){
+  const fb=getFB();
+  const el=document.getElementById('konusma-list');
+  el.innerHTML='<div style="padding:4px"><div class="skel skel-row"></div><div class="skel skel-row"></div></div>';
+  try{
+    const field=PROFILE.role==='marka'?'marka_id':'uretici_id';
+    const q=fb.query(fb.collection(fb.db,'konusmalar'),fb.where(field,'==',ME.uid),fb.orderBy('son_mesaj_zaman','desc'));
+    const snap=await fb.getDocs(q);
+    if(snap.empty){el.innerHTML='<div class="empty"><div class="empty-t">Henüz mesaj yok</div><div class="empty-s">Üreticiler teklif verince konuşmalar burada görünür</div></div>';return;}
+    const m=PROFILE.role==='marka';
+    el.innerHTML='<div class="card">' + snap.docs.map(d=>{
+      const k={id:d.id,...d.data()};
+      const okunmadi=m?(k.okunmadi_marka||0):(k.okunmadi_uretici||0);
+      const karsi=m?k.uretici_adi:k.marka_adi;
+      return`<div class="ci" onclick="openKonusma('${k.id}')">
+        <div class="av" style="background:var(--teal-l);color:var(--teal)">${(karsi||'?').substring(0,2)}</div>
+        <div class="im">
+          <div class="in" style="display:flex;align-items:center;gap:6px">${karsi} ${okunmadi>0?`<span style="background:var(--warm);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px">${okunmadi}</span>`:''}</div>
+          <div class="id2">${k.urun}</div>
+          <div class="id2" style="margin-top:2px;color:var(--ink3)">${k.son_mesaj||''}</div>
+        </div>
+        <div class="ir" style="font-size:11px;color:var(--ink3)">${k.son_mesaj_zaman?fmtD(k.son_mesaj_zaman):''}</div>
+      </div>`;
+    }).join('') + '</div>';
+    // Badge güncelle
+    const totalOkunmadi=snap.docs.reduce((a,d)=>{
+      const k=d.data();
+      return a+(m?(k.okunmadi_marka||0):(k.okunmadi_uretici||0));
+    },0);
+    const nb=document.getElementById('nb-msg');
+    if(nb){nb.textContent=totalOkunmadi||'';nb.classList.toggle('on',totalOkunmadi>0);}
+  }catch(e){console.error(e);el.innerHTML='<div class="empty"><div class="empty-s">Yüklenemedi</div></div>';}
+}
+
+async function openKonusma(kid){
+  const fb=getFB();
+  _aktifKonusma=kid;
+  // Konuşma bilgisi
+  const kSnap=await fb.getDoc(fb.doc(fb.db,'konusmalar',kid));
+  const k=kSnap.data();
+  const m=PROFILE.role==='marka';
+  const karsi=m?k.uretici_adi:k.marka_adi;
+  document.getElementById('ms-header').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--teal-l);color:var(--teal);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px">${(karsi||'?').substring(0,2)}</div>
+      <div>
+        <div style="font-weight:600;color:var(--ink)">${karsi}</div>
+        <div style="font-size:12px;color:var(--ink3)">${k.urun}</div>
+      </div>
+    </div>`;
+  // Okundu işaretle
+  const updateData={};
+  updateData[m?'okunmadi_marka':'okunmadi_uretici']=0;
+  await fb.updateDoc(fb.doc(fb.db,'konusmalar',kid),updateData);
+  // Mesajları yükle
+  await loadMesajlar(kid);
+  os('ms');
+}
+
+async function loadMesajlar(kid){
+  const fb=getFB();
+  const el=document.getElementById('ms-msgs');
+  try{
+    const q=fb.query(fb.collection(fb.db,'mesajlar'),fb.where('konusma_id','==',kid),fb.orderBy('createdAt','asc'));
+    const snap=await fb.getDocs(q);
+    el.innerHTML=snap.docs.map(d=>{
+      const msg=d.data();
+      const benimMi=msg.gonderen_id===ME.uid;
+      const isTeklif=msg.tip==='teklif';
+      return`<div style="display:flex;flex-direction:column;align-items:${benimMi?'flex-end':'flex-start'};gap:2px">
+        ${!benimMi?`<div style="font-size:11px;color:var(--ink3);padding:0 4px">${msg.gonderen_adi}</div>`:''}
+        <div style="max-width:78%;padding:10px 14px;border-radius:${benimMi?'18px 18px 4px 18px':'18px 18px 18px 4px'};font-size:14px;line-height:1.5;white-space:pre-wrap;${benimMi?'background:var(--teal);color:#fff':'background:var(--white);border:1px solid var(--border);color:var(--ink)'}${isTeklif?';font-weight:500':''}">${msg.icerik}</div>
+      </div>`;
+    }).join('');
+    el.scrollTop=el.scrollHeight;
+  }catch(e){console.error(e);}
+}
+
+async function sendMsg(){
+  const fb=getFB();
+  const input=document.getElementById('ms-input');
+  const text=input.value.trim();
+  if(!text||!_aktifKonusma)return;
+  input.value='';
+  try{
+    await fb.addDoc(fb.collection(fb.db,'mesajlar'),{
+      konusma_id:_aktifKonusma,
+      gonderen_id:ME.uid,
+      gonderen_adi:PROFILE.name,
+      tip:'mesaj',
+      icerik:text,
+      createdAt:fb.serverTimestamp()
+    });
+    // Konuşma güncelle
+    const m=PROFILE.role==='marka';
+    const updateData={
+      son_mesaj:text,
+      son_mesaj_zaman:fb.serverTimestamp(),
+    };
+    updateData[m?'okunmadi_uretici':'okunmadi_marka']=1;
+    await fb.updateDoc(fb.doc(fb.db,'konusmalar',_aktifKonusma),updateData);
+    await loadMesajlar(_aktifKonusma);
+  }catch(e){toast('Gönderilemedi');}
+}
+
 async function rSiparisler(){
   const el=document.getElementById('sip-list');
   el.innerHTML='<div style="padding:4px"><div class="skel skel-row"></div><div class="skel skel-row"></div></div>';
