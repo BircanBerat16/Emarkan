@@ -259,6 +259,16 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 .upload-thumb-wrap{position:relative;width:80px;height:80px}
 .upload-del{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--ink);color:var(--white);border:none;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;line-height:1}
 
+
+/* TALEP CARDS */
+.talep-card{background:var(--white);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .18s;margin-bottom:10px;box-shadow:var(--shadow)}
+.talep-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,23,20,.1)}
+.talep-img-wrap{position:relative;height:180px;background:var(--cream3);overflow:hidden}
+.talep-main-img{width:100%;height:100%;object-fit:cover}
+.talep-img-count{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:3px 8px;border-radius:20px}
+.talep-chip-overlay{position:absolute;top:10px;left:10px}
+.talep-body{padding:12px}
+
 /* AIRBNB STYLE PRODUCER CARDS */
 .plist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding:0}
 .pcard{background:var(--white);border:none;border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;margin-bottom:0;box-shadow:none}
@@ -568,7 +578,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
     <div class="fl"><label>Bütçe (birim ₺) <span style="font-weight:400;color:var(--ink3);text-transform:none;font-size:10px">— opsiyonel</span></label><input id="nt-butce" type="number" placeholder="örn. 150"></div>
     <div class="fl"><label>Notlar</label><textarea id="nt-not" placeholder="Kumaş türü, beden aralığı, renk..."></textarea></div>
     <div class="fl">
-      <label>Görseller <span style="font-weight:400;color:var(--ink3);text-transform:none;font-size:10px">— opsiyonel, max 3</span></label>
+      <label>Görseller <span style="font-weight:400;color:var(--ink3);text-transform:none;font-size:10px">— zorunlu, max 3</span></label>
       <div class="upload-area" id="talep-upload-area" onclick="document.getElementById('talep-file').click()">
         <input type="file" id="talep-file" accept="image/*" multiple onchange="handleTalepFiles(this)">
         <div style="font-size:13px;color:var(--ink3)">+ Görsel ekle (max 3)</div>
@@ -970,10 +980,11 @@ async function subTalep(){
   const urun=document.getElementById('nt-urun').value.trim();
   const adet=+document.getElementById('nt-adet').value;
   if(!urun||!adet){toast('Ürün türü ve adet zorunlu');return;}
+  if(window._talepGorseller.length===0){toast('En az 1 görsel eklemelisiniz');return;}
   const btn=document.getElementById('yeni-submit-btn');
   btn.disabled=true;btn.textContent='Yayınlanıyor...';
   try{
-    const gorseller=[..._talepGorseller];
+    const gorseller=[...window._talepGorseller];
     await fb.addDoc(fb.collection(fb.db,'talepler'),{
       user_id:ME.uid,marka_adi:PROFILE.name,urun,adet,
       tarih:document.getElementById('nt-tarih').value||null,
@@ -1003,17 +1014,37 @@ async function rTalepler(){
       counts[t.id]=snap.size;
     }catch(e){counts[t.id]=0;}
   }));
-  el.innerHTML=list.map(t=>`
+  el.innerHTML=list.map(t=>{
+    const imgs=t.gorseller&&t.gorseller.length?t.gorseller:[];
+    const hasImg=imgs.length>0;
+    return hasImg ? `
+    <div class="talep-card" onclick="openTalep('${t.id}')">
+      <div class="talep-img-wrap">
+        <img src="${imgs[0]}" class="talep-main-img" onerror="this.parentElement.style.background='var(--cream3)'">
+        ${imgs.length>1?`<div class="talep-img-count">+${imgs.length} görsel</div>`:''}
+        <div class="talep-chip-overlay">${chip(t.status)}</div>
+      </div>
+      <div class="talep-body">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:600;font-size:14px;color:var(--ink)">${m?t.urun:t.marka_adi}</div>
+            <div style="font-size:12px;color:var(--ink3);margin-top:2px">${m?t.marka_adi:t.urun} · ${t.adet} adet</div>
+          </div>
+          ${t.butce?`<div style="font-size:13px;font-weight:600;color:var(--ink)">${fmt(t.butce)}<span style="font-size:10px;font-weight:400;color:var(--ink3)">/adet</span></div>`:''}
+        </div>
+        <div class="tklf-cnt" style="margin-top:6px"><div class="tklf-dot"></div>${counts[t.id]||0} teklif</div>
+      </div>
+    </div>` : `
     <div class="ci" onclick="openTalep('${t.id}')">
       <div class="av">${(t.marka_adi||'?').substring(0,2)}</div>
       <div class="im">
         <div class="in">${m?t.urun:t.marka_adi}</div>
         <div class="id2">${t.adet} adet${t.butce?' · '+fmt(t.butce)+'/adet':''}</div>
-        ${!m?`<div style="font-size:12px;color:var(--warm2);margin-top:2px">${fmt(t.butce)}/adet</div>`:''}
         <div class="tklf-cnt"><div class="tklf-dot"></div>${counts[t.id]||0} teklif</div>
       </div>
       <div class="ir">${chip(t.status)}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 async function openTalep(tid){
@@ -1311,7 +1342,7 @@ async function handleKatalogFile(input){
   document.getElementById('katalog-upload-txt').textContent = 'Yükleniyor...';
   try{
     const url = await uploadToCloudinary(file);
-    _katalogGorsel = url;
+    window._katalogGorsel = url;
     document.getElementById('katalog-preview').innerHTML = `
       <div class="upload-thumb-wrap" style="margin-top:8px">
         <img class="upload-thumb" src="${url}">
@@ -1352,7 +1383,7 @@ async function addKatalog(){
     await fb.addDoc(fb.collection(fb.db,'katalog'),{
       user_id:ME.uid,baslik,
       aciklama:document.getElementById('k-aciklama').value,
-      gorsel_url:_katalogGorsel||null,
+      gorsel_url:window._katalogGorsel||null,
       etiketler,createdAt:fb.serverTimestamp()
     });
     cm('m-katalog');
@@ -1407,34 +1438,34 @@ async function uploadToCloudinary(file){
   throw new Error('Yükleme başarısız');
 }
 
-let _talepGorseller = [];
-let _katalogGorsel = null;
+window.window._talepGorseller = [];
+window.window._katalogGorsel = null;
 
 function initTalepUpload(){
-  _talepGorseller = [];
+  window._talepGorseller = [];
   renderTalepPreviews();
 }
 
 function renderTalepPreviews(){
   const el = document.getElementById('talep-preview');
   if(!el) return;
-  el.innerHTML = _talepGorseller.map((url,i) => `
+  el.innerHTML = window._talepGorseller.map((url,i) => `
     <div class="upload-thumb-wrap">
       <img class="upload-thumb" src="${url}">
       <button class="upload-del" onclick="removeTalepGorsel(${i})">✕</button>
     </div>`).join('');
   // Yükleme alanını gizle max 3'te
   const area = document.getElementById('talep-upload-area');
-  if(area) area.style.display = _talepGorseller.length >= 3 ? 'none' : '';
+  if(area) area.style.display = window._talepGorseller.length >= 3 ? 'none' : '';
 }
 
 function removeTalepGorsel(i){
-  _talepGorseller.splice(i,1);
+  window._talepGorseller.splice(i,1);
   renderTalepPreviews();
 }
 
 async function handleTalepFiles(input){
-  const files = Array.from(input.files).slice(0, 3 - _talepGorseller.length);
+  const files = Array.from(input.files).slice(0, 3 - window._talepGorseller.length);
   if(!files.length) return;
   const btn = document.getElementById('yeni-submit-btn');
   const area = document.getElementById('talep-upload-area');
@@ -1442,7 +1473,7 @@ async function handleTalepFiles(input){
   try{
     for(const file of files){
       const url = await uploadToCloudinary(file);
-      _talepGorseller.push(url);
+      window._talepGorseller.push(url);
     }
   }catch(e){ toast('Görsel yüklenemedi: '+e.message); }
   area.querySelector('div').textContent = '+ Görsel ekle (max 3)';
