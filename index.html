@@ -451,7 +451,18 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
       <div class="fl"><label>Rolünüz</label>
         <div class="rpick">
           <button class="ropt on" id="ro-m" onclick="pickRole('marka')">Marka / Alıcı</button>
-          <button class="ropt" id="ro-u" onclick="pickRole('uretici')">Üretici</button>
+          <button class="ropt" id="ro-u" onclick="pickRole('uretici')">Hizmet Sağlayıcı</button>
+        </div>
+        <div id="hizmet-tip-wrap" style="display:none;margin-top:10px">
+          <select id="hizmet-tip" style="width:100%;border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-family:inherit;font-size:14px;background:var(--white);color:var(--ink);outline:none">
+            <option value="uretici">Üretici</option>
+            <option value="etiket">Etiket & Ambalajcı</option>
+            <option value="kalipci">Kalıpçı</option>
+            <option value="tasarimci">Tasarımcı</option>
+            <option value="kumasci">Kumaşçı</option>
+            <option value="aksesuarci">Aksesuarcı</option>
+            <option value="diger">Diğer</option>
+          </select>
         </div>
       </div>
       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px">
@@ -532,6 +543,15 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
     <div id="pg-pazar" class="pg">
       <div class="sbar"><div class="swrap"><span class="sico">⌕</span><input class="sinput" id="sq" placeholder="Üretici, kumaş, konum..." oninput="filterProducers()"></div></div>
       <div class="fstrip">
+        <button class="fpill on" id="ft-all" onclick="setHizmetFilter(null)">Tümü</button>
+        <button class="fpill" id="ft-uretici" onclick="setHizmetFilter('uretici')">Üretici</button>
+        <button class="fpill" id="ft-etiket" onclick="setHizmetFilter('etiket')">Etiket & Ambalaj</button>
+        <button class="fpill" id="ft-kalipci" onclick="setHizmetFilter('kalipci')">Kalıpçı</button>
+        <button class="fpill" id="ft-tasarimci" onclick="setHizmetFilter('tasarimci')">Tasarımcı</button>
+        <button class="fpill" id="ft-kumasci" onclick="setHizmetFilter('kumasci')">Kumaşçı</button>
+        <button class="fpill" id="ft-aksesuarci" onclick="setHizmetFilter('aksesuarci')">Aksesuarcı</button>
+      </div>
+      <div class="fstrip" style="padding-top:0">
         <button class="fpill" id="f-oeko" onclick="tf('oeko')">OEKO-TEX</button>
         <button class="fpill" id="f-gots" onclick="tf('gots')">GOTS</button>
         <button class="fpill" id="f-kucuk" onclick="tf('kucuk')">Küçük MOQ</button>
@@ -963,6 +983,17 @@ function maskMarka(ad){
   if(ad.length<=2) return ad+'***';
   return ad.substring(0,2)+'*'.repeat(Math.max(3,ad.length-2));
 }
+
+const HIZMET_LABELS = {
+  'uretici': 'Üretici',
+  'etiket': 'Etiket & Ambalajcı',
+  'kalipci': 'Kalıpçı',
+  'tasarimci': 'Tasarımcı',
+  'kumasci': 'Kumaşçı',
+  'aksesuarci': 'Aksesuarcı',
+  'diger': 'Diğer'
+};
+function getHizmetLabel(tip){ return HIZMET_LABELS[tip]||'Hizmet Sağlayıcı'; }
 const TEKLIF_UCRETI = 85;
 function getTeklifUcreti(toplamTeklif){
   const oran=(Math.random()*1.2+0.3)/100;
@@ -1009,6 +1040,8 @@ function pickRole(r){
   regRole=r;
   document.getElementById('ro-m').classList.toggle('on',r==='marka');
   document.getElementById('ro-u').classList.toggle('on',r==='uretici');
+  const wrap=document.getElementById('hizmet-tip-wrap');
+  if(wrap)wrap.style.display=r==='uretici'?'':'none';
 }
 
 async function doLogin(){
@@ -1044,8 +1077,9 @@ async function doReg(){
   btn.disabled=true;btn.textContent='Kayıt olunuyor...';
   try{
     const cred=await fb.createUserWithEmailAndPassword(fb.auth,email,pass);
+    const hizmetTip=regRole==='uretici'?(document.getElementById('hizmet-tip')?.value||'uretici'):'marka';
     await fb.setDoc(fb.doc(fb.db,'profiles',cred.user.uid),{
-      name,role:regRole,email,bakiye:0,createdAt:fb.serverTimestamp()
+      name,role:regRole,hizmet_tipi:hizmetTip,email,bakiye:0,createdAt:fb.serverTimestamp()
     });
     await loadSession(cred.user);
   }catch(e){
@@ -1104,7 +1138,7 @@ async function bootApp(){
 function startApp(){
   const m=PROFILE.role==='marka';
   document.getElementById('greeting').textContent='Merhaba, '+PROFILE.name.split(' ')[0];
-  document.getElementById('role-chip').textContent=m?'Marka':'Üretici';
+  document.getElementById('role-chip').textContent=m?'Marka':getHizmetLabel(PROFILE.hizmet_tipi||'uretici');
   document.getElementById('dash-sub').textContent=m?'Bugün ne üretiyoruz?':'Yeni talepler seni bekliyor';
   const d=new Date();
   document.getElementById('dash-date').textContent=d.toLocaleDateString('tr-TR',{weekday:'long',day:'numeric',month:'long'});
@@ -1178,6 +1212,18 @@ const PRODUCERS=[
 
 function tf(f){AF.has(f)?AF.delete(f):AF.add(f);document.getElementById('f-'+f).classList.toggle('on',AF.has(f));rProducers();}
 
+
+let _hizmetFilter = null;
+
+function setHizmetFilter(tip){
+  _hizmetFilter = tip;
+  document.getElementById('ft-all').classList.toggle('on', !tip);
+  ['uretici','etiket','kalipci','tasarimci','kumasci','aksesuarci'].forEach(t=>{
+    const btn=document.getElementById('ft-'+t);
+    if(btn)btn.classList.toggle('on', t===tip);
+  });
+  filterProducers();
+}
 let _allProducers = [];
 
 async function rProducers(){
@@ -1200,6 +1246,7 @@ function filterProducers(){
   const q=(document.getElementById('sq')?.value||'').toLowerCase();
   
   let list=_allProducers.filter(p=>{
+    if(_hizmetFilter&&(p.hizmet_tipi||'uretici')!==_hizmetFilter)return false;
     const name=(p.firma_adi||p.name||'').toLowerCase();
     const konum=(p.konum||'').toLowerCase();
     const kats=(p.urun_kategorileri||[]).join(' ').toLowerCase();
@@ -1229,7 +1276,8 @@ function filterProducers(){
       <div class="pbanner" style="background:linear-gradient(145deg,#1A2E28,#0D1A14);position:relative;height:200px">
         ${p.kapak_url?`<img src="${p.kapak_url}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`:''}
         <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(0,0,0,.6))"></div>
-        <div style="position:absolute;top:12px;left:12px;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;color:#fff">${p.konum||'—'}</div>
+        <div style="position:absolute;top:12px;left:12px;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;color:#fff">${getHizmetLabel(p.hizmet_tipi||'uretici')}</div>
+        ${p.konum?`<div style="position:absolute;top:12px;left:${p.hizmet_tipi?'calc(12px + 120px)':'12px'};background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border-radius:20px;padding:4px 10px;font-size:11px;color:#fff">${p.konum}</div>`:''}
         ${serts.length?`<div style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);border-radius:20px;padding:4px 8px;font-size:10px;color:#fff">${serts[0]}</div>`:''}
         <div style="position:absolute;bottom:12px;left:12px;display:flex;align-items:center;gap:8px">
           ${p.logo_url?`<img src="${p.logo_url}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;border:1.5px solid rgba(255,255,255,.5)">`:`<div style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;color:#fff">${av}</div>`}
