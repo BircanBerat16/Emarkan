@@ -263,12 +263,15 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 
 /* TALEP GRID */
 #tal-list{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:0}
-.talep-card{background:var(--white);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .18s;box-shadow:var(--shadow)}
-.talep-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(26,23,20,.12)}
-.talep-card:active{transform:translateY(0)}
+.talep-card{background:transparent;border:none;border-radius:0;cursor:pointer;transition:all .18s}
+.talep-card:hover .talep-img-wrap img{transform:scale(1.04)}
+.talep-img-wrap{position:relative;border-radius:14px;overflow:hidden;background:var(--cream3);aspect-ratio:1/1}
+.talep-main-img{width:100%;height:100%;object-fit:cover;transition:transform .3s;display:block}
+.talep-chip-overlay{position:absolute;top:10px;left:10px}
+.talep-img-count{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:3px 8px;border-radius:20px}
 
 
-@media(max-width:640px){#tal-list{gap:8px}}
+@media(max-width:768px){#tal-list{grid-template-columns:repeat(2,1fr);gap:10px}}
 
 /* AIRBNB STYLE PRODUCER CARDS */
 .plist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding:0}
@@ -1025,15 +1028,18 @@ async function rTalepler(){
         ${imgs.length>1?`<div class="talep-img-count">+${imgs.length} görsel</div>`:''}
         <div class="talep-chip-overlay">${chip(t.status)}</div>
       </div>
-      <div class="talep-body">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div>
-            <div style="font-weight:600;font-size:14px;color:var(--ink)">${m?t.urun:t.marka_adi}</div>
-            <div style="font-size:12px;color:var(--ink3);margin-top:2px">${m?t.marka_adi:t.urun} · ${t.adet} adet</div>
+      <div style="padding:10px 4px 4px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:4px">
+          <div style="min-width:0;flex:1">
+            <div style="font-weight:600;font-size:13px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m?t.urun:t.marka_adi}</div>
+            <div style="font-size:12px;color:var(--ink3);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m?t.marka_adi:t.urun}</div>
+            <div style="font-size:12px;color:var(--ink3)">${t.adet} adet${t.tarih?' · '+fmtD(t.tarih):''}</div>
           </div>
-          ${t.butce?`<div style="font-size:13px;font-weight:600;color:var(--ink)">${fmt(t.butce)}<span style="font-size:10px;font-weight:400;color:var(--ink3)">/adet</span></div>`:''}
+          <div style="flex-shrink:0;text-align:right">
+            ${t.butce?`<div style="font-size:13px;font-weight:600;color:var(--ink)">${fmt(t.butce)}<span style="font-size:10px;font-weight:400;color:var(--ink3)">/ad</span></div>`:''}
+            <div class="tklf-cnt" style="margin:2px 0 0;justify-content:flex-end"><div class="tklf-dot"></div>${counts[t.id]||0} teklif</div>
+          </div>
         </div>
-        <div class="tklf-cnt" style="margin-top:6px"><div class="tklf-dot"></div>${counts[t.id]||0} teklif</div>
       </div>
     </div>` : `
     <div class="ci" onclick="openTalep('${t.id}')">
