@@ -10,10 +10,28 @@
 <meta name="theme-color" content="#F7F3ED">
 <meta name="description" content="emarkan — Tekstil üreticileri ile perakendeci markaları buluşturan B2B platform">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>emarkan</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, query, where, orderBy, getDocs, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAxmfQgQOpscxyTPlHzbcivO3qX5uuopRU",
+    authDomain: "emarkan-54637.firebaseapp.com",
+    projectId: "emarkan-54637",
+    storageBucket: "emarkan-54637.firebasestorage.app",
+    messagingSenderId: "32942305532",
+    appId: "1:32942305532:web:b1bc504170bdb03a0b6779"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  window._fb = { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, doc, setDoc, getDoc, updateDoc, collection, query, where, orderBy, getDocs, addDoc, deleteDoc, serverTimestamp };
+</script>
 <style>
 :root{
   --cream:#F7F3ED;--cream2:#EFEBE3;--cream3:#E5DFD5;
@@ -608,25 +626,25 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 <div id="toast"></div>
 
 <script>
-const SUPA_URL='https://eyazjussqtzjaduldhuq.supabase.co';
-const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5YXpqdXNzcXR6amFkdWxkaHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NTExMTksImV4cCI6MjA5MjMyNzExOX0.6bWl_xCiaCN8svz7_5sJ8C0LA0t18Il6ce7-3bBmWzo';
-const TEKLIF_UCRETI=500;
-const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
-let ME=null,PROFILE=null,regRole='marka',curTalepId=null,_tkData={};
-let _sertler=[],_katlar=[],AF=new Set();
+const TEKLIF_UCRETI = 500;
+let ME = null, PROFILE = null, regRole = 'marka', curTalepId = null, _tkData = {};
+let _sertler = [], _katlar = [], AF = new Set();
 
-const CHIPS={
-  open:{l:'Teklif bekleniyor',bg:'#FEF3CD',c:'#8B6914'},
-  offered:{l:'Teklif alındı',bg:'#E3EDE9',c:'#2D6A5A'},
-  accepted:{l:'Onaylandı',bg:'#E6F1FB',c:'#185FA5'},
-  production:{l:'Üretimde',bg:'#E6F1FB',c:'#185FA5'},
-  qc:{l:'Kalite kontrol',bg:'#F0E6FB',c:'#533AB7'},
-  shipped:{l:'Kargoda',bg:'#EAF3DE',c:'#3B6D11'},
-  delivered:{l:'Teslim edildi',bg:'#EAF3DE',c:'#27500A'},
+// Wait for Firebase to load
+function getFB() { return window._fb; }
+
+const CHIPS = {
+  open:      {l:'Teklif bekleniyor', bg:'#FEF3CD', c:'#8B6914'},
+  offered:   {l:'Teklif alındı',     bg:'#E3EDE9', c:'#2D6A5A'},
+  accepted:  {l:'Onaylandı',         bg:'#E6F1FB', c:'#185FA5'},
+  production:{l:'Üretimde',          bg:'#E6F1FB', c:'#185FA5'},
+  qc:        {l:'Kalite kontrol',    bg:'#F0E6FB', c:'#533AB7'},
+  shipped:   {l:'Kargoda',           bg:'#EAF3DE', c:'#3B6D11'},
+  delivered: {l:'Teslim edildi',     bg:'#EAF3DE', c:'#27500A'},
 };
 function chip(s){const c=CHIPS[s]||{l:s,bg:'#eee',c:'#666'};return`<span class="chip" style="background:${c.bg};color:${c.c}">${c.l}</span>`}
 function fmt(n){return'₺'+(n||0).toLocaleString('tr-TR')}
-function fmtD(iso){if(!iso)return'—';return new Date(iso).toLocaleDateString('tr-TR')}
+function fmtD(ts){if(!ts)return'—';const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleDateString('tr-TR')}
 
 // VIEW
 function showView(v){
@@ -650,7 +668,9 @@ function pickRole(r){
   document.getElementById('ro-m').classList.toggle('on',r==='marka');
   document.getElementById('ro-u').classList.toggle('on',r==='uretici');
 }
+
 async function doLogin(){
+  const fb=getFB();
   const email=document.getElementById('le').value.trim();
   const pass=document.getElementById('lp').value;
   const err=document.getElementById('lerr');
@@ -658,12 +678,17 @@ async function doLogin(){
   err.textContent='';
   if(!email||!pass){err.textContent='Email ve şifre zorunlu';return;}
   btn.disabled=true;btn.textContent='Giriş yapılıyor...';
-  const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  try{
+    const cred=await fb.signInWithEmailAndPassword(fb.auth,email,pass);
+    await loadSession(cred.user);
+  }catch(e){
+    err.textContent='Email veya şifre hatalı';
+  }
   btn.disabled=false;btn.textContent='Giriş yap';
-  if(error){err.textContent='Email veya şifre hatalı';return;}
-  if(data.user)await loadSession(data.user);
 }
+
 async function doReg(){
+  const fb=getFB();
   const name=document.getElementById('rn').value.trim();
   const email=document.getElementById('re').value.trim();
   const pass=document.getElementById('rp').value;
@@ -673,51 +698,60 @@ async function doReg(){
   if(!name||!email||!pass){err.textContent='Tüm alanlar zorunlu';return;}
   if(pass.length<6){err.textContent='Şifre en az 6 karakter';return;}
   btn.disabled=true;btn.textContent='Kayıt olunuyor...';
-  const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{name,role:regRole}}});
-  btn.disabled=false;btn.textContent='Kayıt ol';
-  if(error){err.textContent=error.message;return;}
-  if(data.user){
-    await sb.from('profiles').upsert({id:data.user.id,name,role:regRole,email});
-    await loadSession(data.user);
+  try{
+    const cred=await fb.createUserWithEmailAndPassword(fb.auth,email,pass);
+    await fb.setDoc(fb.doc(fb.db,'profiles',cred.user.uid),{
+      name,role:regRole,email,bakiye:0,createdAt:fb.serverTimestamp()
+    });
+    await loadSession(cred.user);
+  }catch(e){
+    err.textContent=e.message;
   }
+  btn.disabled=false;btn.textContent='Kayıt ol';
 }
+
 async function doLogout(){
-  await sb.auth.signOut();
+  const fb=getFB();
+  await fb.signOut(fb.auth);
   ME=null;PROFILE=null;
   document.getElementById('le').value='';
   document.getElementById('lp').value='';
   showView('landing');
 }
+
 async function loadSession(user){
+  const fb=getFB();
   ME=user;
   try{
-    let {data:p}=await sb.from('profiles').select('*').eq('id',user.id).single();
-    if(!p){
-      const meta=user.user_metadata||{};
-      const name=meta.name||user.email.split('@')[0];
-      const role=meta.role||regRole||'marka';
-      await sb.from('profiles').insert({id:user.id,name,role,email:user.email});
-      p={id:user.id,name,role,email:user.email,bakiye:0};
+    const snap=await fb.getDoc(fb.doc(fb.db,'profiles',user.uid));
+    if(snap.exists()){
+      PROFILE={id:user.uid,...snap.data()};
+    }else{
+      PROFILE={id:user.uid,name:user.email.split('@')[0],role:regRole||'marka',bakiye:0};
     }
-    PROFILE=p;
   }catch(e){
-    const meta=user.user_metadata||{};
-    PROFILE={id:user.id,name:meta.name||user.email.split('@')[0],role:meta.role||'marka',bakiye:0};
+    PROFILE={id:user.uid,name:user.email.split('@')[0],role:'marka',bakiye:0};
   }
   showView('app');
   startApp();
 }
+
 async function bootApp(){
-  const {data:{session}}=await sb.auth.getSession();
-  if(session){await loadSession(session.user);}
-  else{showView('landing');}
-  sb.auth.onAuthStateChange(async(event,session)=>{
-    if(event==='SIGNED_IN'&&session&&!ME){await loadSession(session.user);}
-    else if(event==='SIGNED_OUT'){ME=null;PROFILE=null;showView('landing');}
+  // Wait for Firebase module to load
+  let tries=0;
+  while(!window._fb&&tries<20){await new Promise(r=>setTimeout(r,200));tries++;}
+  if(!window._fb){showView('landing');return;}
+  const fb=getFB();
+  fb.onAuthStateChanged(fb.auth,async user=>{
+    if(user&&!ME){await loadSession(user);}
+    else if(!user){showView('landing');}
   });
+  // Check current session
+  const user=fb.auth.currentUser;
+  if(!user){showView('landing');}
 }
 
-// APP
+// APP START
 function startApp(){
   const m=PROFILE.role==='marka';
   document.getElementById('greeting').textContent='Merhaba, '+PROFILE.name.split(' ')[0];
@@ -734,6 +768,7 @@ function startApp(){
   if(!m)loadBakiye();
   gp('dash');rProducers();
 }
+
 function gp(id){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
@@ -747,30 +782,48 @@ function gp(id){
 
 // DATA
 async function getTalepler(){
-  let q=sb.from('talepler').select('*').order('created_at',{ascending:false});
-  if(PROFILE.role==='marka')q=q.eq('user_id',ME.id);
-  else q=q.in('status',['open','offered','accepted']);
-  const {data}=await q;return data||[];
+  const fb=getFB();
+  try{
+    if(PROFILE.role==='marka'){
+      const q=fb.query(fb.collection(fb.db,'talepler'),fb.where('user_id','==',ME.uid),fb.orderBy('createdAt','desc'));
+      const snap=await fb.getDocs(q);
+      return snap.docs.map(d=>({id:d.id,...d.data()}));
+    }else{
+      const q=fb.query(fb.collection(fb.db,'talepler'),fb.where('status','in',['open','offered','accepted']),fb.orderBy('createdAt','desc'));
+      const snap=await fb.getDocs(q);
+      return snap.docs.map(d=>({id:d.id,...d.data()}));
+    }
+  }catch(e){console.error(e);return[];}
 }
+
 async function getTeklifler(tid){
-  const {data}=await sb.from('teklifler').select('*').eq('talep_id',tid).order('created_at');
-  return data||[];
+  const fb=getFB();
+  try{
+    const q=fb.query(fb.collection(fb.db,'teklifler'),fb.where('talep_id','==',tid),fb.orderBy('createdAt','asc'));
+    const snap=await fb.getDocs(q);
+    return snap.docs.map(d=>({id:d.id,...d.data()}));
+  }catch(e){return[];}
 }
+
 async function getSiparisler(){
-  let q=sb.from('siparisler').select('*').order('created_at',{ascending:false});
-  if(PROFILE.role==='marka')q=q.eq('marka_id',ME.id);
-  else q=q.eq('uretici_id',ME.id);
-  const {data}=await q;return data||[];
+  const fb=getFB();
+  try{
+    const field=PROFILE.role==='marka'?'marka_id':'uretici_id';
+    const q=fb.query(fb.collection(fb.db,'siparisler'),fb.where(field,'==',ME.uid),fb.orderBy('createdAt','desc'));
+    const snap=await fb.getDocs(q);
+    return snap.docs.map(d=>({id:d.id,...d.data()}));
+  }catch(e){return[];}
 }
 
 // PRODUCERS
 const PRODUCERS=[
-  {id:'p1',name:'Bursa Dokuma A.Ş.',loc:'Bursa',av:'BD',bg:'#1A2E28',tc:'#4DB896',tags:['Pamuk','Keten'],moq:500,cap:'15.000 m/ay',cert:['OEKO-TEX','GOTS'],days:21,rating:4.9,rv:37,desc:'1987\'den bu yana sürdürülebilir tekstil.',f:['oeko','gots','bur']},
-  {id:'p2',name:'İpek Atölyesi',loc:'İstanbul',av:'İA',bg:'#2A2014',tc:'#D4A843',tags:['İpek','Viskon'],moq:200,cap:'5.000 m/ay',cert:['OEKO-TEX'],days:14,rating:4.7,rv:22,desc:'El yapımı butik üretimde uzman.',f:['oeko','kucuk','ist']},
+  {id:'p1',name:'Bursa Dokuma',loc:'Bursa',av:'BD',bg:'#1A2E28',tc:'#4DB896',tags:['Pamuk','Keten'],moq:500,cap:'15.000 m/ay',cert:['OEKO-TEX','GOTS'],days:21,rating:4.9,rv:37,desc:'Surdurulebilir tekstil uretimi.',f:['oeko','gots','bur']},
+  {id:'p2',name:'İpek Atölyesi',loc:'İstanbul',av:'İA',bg:'#2A2014',tc:'#D4A843',tags:['İpek','Viskon'],moq:200,cap:'5.000 m/ay',cert:['OEKO-TEX'],days:14,rating:4.7,rv:22,desc:'El yapimi butik uretimde uzman.',f:['oeko','kucuk','ist']},
   {id:'p3',name:'Denim Works',loc:'İstanbul',av:'DW',bg:'#0D1A2A',tc:'#6BA3D6',tags:['Denim','Twill'],moq:1000,cap:'30.000 m/ay',cert:['BCI Cotton'],days:28,rating:4.6,rv:58,desc:'Büyük ölçekli denim üretiminde lider.',f:['ist']},
   {id:'p4',name:'EkoTeks Bursa',loc:'Bursa',av:'ET',bg:'#0D2010',tc:'#5CB87A',tags:['Organik','GRS'],moq:300,cap:'8.000 m/ay',cert:['GOTS','GRS'],days:18,rating:5.0,rv:14,desc:'Geri dönüştürülmüş hammadde.',f:['gots','kucuk','bur']},
   {id:'p5',name:'Nakış Tekstil',loc:'Bursa',av:'NT',bg:'#1A0D2A',tc:'#A07DD4',tags:['Nakış','Baskı'],moq:150,cap:'3.000 m/ay',cert:['OEKO-TEX'],days:10,rating:4.8,rv:29,desc:'Özel baskı ve nakış hizmeti.',f:['oeko','kucuk','bur']},
 ];
+
 function tf(f){AF.has(f)?AF.delete(f):AF.add(f);document.getElementById('f-'+f).classList.toggle('on',AF.has(f));rProducers();}
 function rProducers(){
   const q=(document.getElementById('sq')?.value||'').toLowerCase();
@@ -794,6 +847,7 @@ function rProducers(){
       </div>
     </div>`).join('');
 }
+
 function openProducer(pid){
   const p=PRODUCERS.find(x=>x.id===pid);
   document.getElementById('ps-c').innerHTML=`
@@ -859,20 +913,23 @@ function openNewTalep(){
   om('m-yeni');
 }
 async function subTalep(){
+  const fb=getFB();
   const urun=document.getElementById('nt-urun').value.trim();
   const adet=+document.getElementById('nt-adet').value;
   if(!urun||!adet){toast('Ürün türü ve adet zorunlu');return;}
   const btn=document.getElementById('yeni-submit-btn');
   btn.disabled=true;btn.textContent='Yayınlanıyor...';
-  const {error}=await sb.from('talepler').insert({
-    user_id:ME.id,marka_adi:PROFILE.name,urun,adet,
-    tarih:document.getElementById('nt-tarih').value||null,
-    butce:+document.getElementById('nt-butce').value||0,
-    notlar:document.getElementById('nt-not').value,
-  });
+  try{
+    await fb.addDoc(fb.collection(fb.db,'talepler'),{
+      user_id:ME.uid,marka_adi:PROFILE.name,urun,adet,
+      tarih:document.getElementById('nt-tarih').value||null,
+      butce:+document.getElementById('nt-butce').value||0,
+      notlar:document.getElementById('nt-not').value,
+      status:'open',createdAt:fb.serverTimestamp()
+    });
+    cm('m-yeni');toast('Talep yayınlandı!');rDash();
+  }catch(e){toast('Hata: '+e.message);}
   btn.disabled=false;btn.textContent='Talebi Yayınla';
-  if(error){toast('Hata: '+error.message);return;}
-  cm('m-yeni');toast('Talep yayınlandı!');rDash();
 }
 
 // TALEPLER
@@ -881,11 +938,15 @@ async function rTalepler(){
   el.innerHTML='<div style="padding:4px"><div class="skel skel-row"></div><div class="skel skel-row"></div></div>';
   const m=PROFILE.role==='marka';
   const list=await getTalepler();
-  if(!list.length){el.innerHTML=`<div class="empty"><div class="empty-t">${m?'Henüz talep yok':'Açık talep yok'}</div><div class="empty-s">${m?'+ Yeni talep butonu ile başlayın':'Markalar talep oluşturdukça görünür'}</div></div>`;return;}
+  if(!list.length){el.innerHTML=`<div class="empty"><div class="empty-t">${m?'Henüz talep yok':'Açık talep yok'}</div><div class="empty-s">${m?'+ Yeni talep ile başlayın':'Markalar talep oluşturdukça görünür'}</div></div>`;return;}
   const counts={};
   await Promise.all(list.map(async t=>{
-    const {count}=await sb.from('teklifler').select('*',{count:'exact',head:true}).eq('talep_id',t.id);
-    counts[t.id]=count||0;
+    try{
+      const fb=getFB();
+      const q=fb.query(fb.collection(fb.db,'teklifler'),fb.where('talep_id','==',t.id));
+      const snap=await fb.getDocs(q);
+      counts[t.id]=snap.size;
+    }catch(e){counts[t.id]=0;}
   }));
   el.innerHTML=list.map(t=>`
     <div class="ci" onclick="openTalep('${t.id}')">
@@ -905,7 +966,7 @@ async function openTalep(tid){
   const t=list.find(x=>x.id===tid);if(!t)return;
   const m=PROFILE.role==='marka';
   const teklifler=await getTeklifler(tid);
-  const alreadyBid=teklifler.find(tk=>tk.user_id===ME.id);
+  const alreadyBid=teklifler.find(tk=>tk.user_id===ME.uid);
   const steps=[{k:'open',s:'Yayınlandı'},{k:'offered',s:'Teklif alındı'},{k:'accepted',s:'Onaylandı'}];
   const si=['open','offered','accepted'].indexOf(t.status);
   const stHTML=`<div class="prog"><div class="prog-inner">${steps.map((s,i)=>`
@@ -935,7 +996,7 @@ async function openTalep(tid){
           <span class="chip" style="background:#E3EDE9;color:#2D6A5A">Marka onayı bekleniyor</span>
         </div>
       </div>`;
-    } else if(t.status!=='accepted'){
+    }else if(t.status!=='accepted'){
       actHTML=`<button class="btn btn-teal" style="margin-top:10px;width:100%" onclick="openTeklif('${t.id}');cs('ts')">Teklif Ver</button>`;
     }
   }
@@ -944,7 +1005,7 @@ async function openTalep(tid){
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
         <div style="flex:1;min-width:0;margin-right:10px">
           <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:600;color:var(--ink)">${t.urun}</div>
-          <div style="font-size:12px;color:var(--ink3);margin-top:2px">${t.marka_adi} · ${fmtD(t.created_at)}</div>
+          <div style="font-size:12px;color:var(--ink3);margin-top:2px">${t.marka_adi} · ${fmtD(t.createdAt)}</div>
         </div>${chip(t.status)}
       </div>
       <div class="tklf-cnt" style="margin-bottom:10px"><div class="tklf-dot"></div><strong>${teklifler.length}</strong>&nbsp;teklif geldi</div>
@@ -952,7 +1013,7 @@ async function openTalep(tid){
     </div>
     <div style="padding:12px 18px">
       <div style="font-size:11px;font-weight:500;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Talep Detayları</div>
-      ${[['Ürün',t.urun],['Adet',t.adet+' adet'],['Bütçe (birim)',fmt(t.butce)+'/adet'],['Toplam bütçe',fmt(t.butce*t.adet)],['Teslim tarihi',fmtD(t.tarih)]].map(([l,v])=>`<div class="irow"><span class="il">${l}</span><span class="iv">${v}</span></div>`).join('')}
+      ${[['Ürün',t.urun],['Adet',t.adet+' adet'],['Bütçe (birim)',fmt(t.butce)+'/adet'],['Toplam bütçe',fmt(t.butce*t.adet)],['Teslim tarihi',t.tarih||'—']].map(([l,v])=>`<div class="irow"><span class="il">${l}</span><span class="iv">${v}</span></div>`).join('')}
       ${t.notlar?`<div style="margin-top:10px;font-size:13px;color:var(--ink2);background:var(--cream2);border-radius:10px;padding:11px;line-height:1.6">${t.notlar}</div>`:''}
       ${tkHTML}
     </div>`;
@@ -995,44 +1056,45 @@ async function proceedPay(){
   if(bakiye<TEKLIF_UCRETI){toast('Bakiyeniz yetersiz.');om('m-bakiye');}
   else om('m-odeme');
 }
+
 async function doPayment(){
+  const fb=getFB();
   const btn=document.getElementById('pay-btn');
   const bakiye=PROFILE.bakiye||0;
   if(bakiye<TEKLIF_UCRETI){toast('Bakiyeniz yetersiz.');cm('m-odeme');om('m-bakiye');return;}
   btn.disabled=true;btn.innerHTML='<span style="display:inline-block;width:13px;height:13px;border:2px solid rgba(0,0,0,.15);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:5px"></span>İşleniyor...';
-  setTimeout(async()=>{
+  try{
     const yeni=bakiye-TEKLIF_UCRETI;
-    const {error:be}=await sb.from('profiles').update({bakiye:yeni}).eq('id',ME.id);
-    if(be){btn.disabled=false;btn.textContent='Onayla · Teklifi Gönder';toast('Hata: '+be.message);return;}
+    await fb.updateDoc(fb.doc(fb.db,'profiles',ME.uid),{bakiye:yeni});
     PROFILE.bakiye=yeni;
     document.getElementById('bakiye-val').textContent=yeni.toLocaleString('tr-TR');
-    const {error}=await sb.from('teklifler').insert({
-      talep_id:curTalepId,user_id:ME.id,uretici_adi:PROFILE.name,
+    await fb.addDoc(fb.collection(fb.db,'teklifler'),{
+      talep_id:curTalepId,user_id:ME.uid,uretici_adi:PROFILE.name,
       fiyat:_tkData.fiyat,gun:_tkData.gun,notlar:_tkData.notlar,fee:TEKLIF_UCRETI,
+      createdAt:fb.serverTimestamp()
     });
-    if(!error)await sb.from('talepler').update({status:'offered'}).eq('id',curTalepId).eq('status','open');
-    btn.disabled=false;btn.textContent='Onayla · Teklifi Gönder';
+    await fb.updateDoc(fb.doc(fb.db,'talepler',curTalepId),{status:'offered'});
     cm('m-odeme');
-    if(error){toast('Hata: '+error.message);}
-    else{toast('Teklif gönderildi! Bakiyenizden '+fmt(TEKLIF_UCRETI)+' düşüldü.');rDash();rTalepler();openTalep(curTalepId);}
-  },1400);
+    toast('Teklif gönderildi! Bakiyenizden '+fmt(TEKLIF_UCRETI)+' düşüldü.');
+    rDash();rTalepler();openTalep(curTalepId);
+  }catch(e){toast('Hata: '+e.message);}
+  btn.disabled=false;btn.textContent='Onayla · Teklifi Gönder';
 }
 
 // KABUL ET
 async function doAccept(talepId,teklifId){
+  const fb=getFB();
   try{
     const list=await getTalepler();const talep=list.find(x=>x.id===talepId);
     const teklifler=await getTeklifler(talepId);const teklif=teklifler.find(x=>x.id===teklifId);
     if(!talep||!teklif){toast('Bulunamadı');return;}
-    const {error:e1}=await sb.from('talepler').update({status:'accepted'}).eq('id',talepId);
-    if(e1){toast('Hata: '+e1.message);return;}
-    const {error:e2}=await sb.from('siparisler').insert({
-      talep_id:talepId,marka_id:ME.id,marka_adi:PROFILE.name,
+    await fb.updateDoc(fb.doc(fb.db,'talepler',talepId),{status:'accepted'});
+    await fb.addDoc(fb.collection(fb.db,'siparisler'),{
+      talep_id:talepId,marka_id:ME.uid,marka_adi:PROFILE.name,
       uretici_id:teklif.user_id,uretici_adi:teklif.uretici_adi,
       urun:talep.urun,adet:talep.adet,tutar:teklif.fiyat*talep.adet,
-      status:'production',tarih:talep.tarih
+      status:'production',tarih:talep.tarih||null,createdAt:fb.serverTimestamp()
     });
-    if(e2){toast('Sipariş oluşturulamadı: '+e2.message);return;}
     cs('ts');toast('Teklif kabul edildi! Sipariş oluşturuldu.');
     await rDash();await rTalepler();
   }catch(e){toast('Hata: '+e.message);}
@@ -1056,6 +1118,7 @@ async function rSiparisler(){
       <div class="ir">${chip(s.status)}</div>
     </div>`).join('');
 }
+
 async function openSiparis(sid){
   const list=await getSiparisler();
   const s=list.find(x=>x.id===sid);if(!s)return;
@@ -1081,25 +1144,32 @@ async function openSiparis(sid){
       </div>${stHTML}${actHTML}
     </div>
     <div style="padding:12px 18px">
-      <div style="font-size:11px;font-weight:500;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Sipariş Detayları</div>
-      ${[['Ürün',s.urun],['Adet',s.adet+' adet'],['Toplam tutar',fmt(s.tutar)],['Birim fiyat',fmt(s.tutar/s.adet)+'/adet'],['Teslim tarihi',fmtD(s.tarih)]].map(([l,v])=>`<div class="irow"><span class="il">${l}</span><span class="iv">${v}</span></div>`).join('')}
+      ${[['Ürün',s.urun],['Adet',s.adet+' adet'],['Toplam tutar',fmt(s.tutar)],['Birim fiyat',fmt(s.tutar/s.adet)+'/adet'],['Teslim tarihi',s.tarih||'—']].map(([l,v])=>`<div class="irow"><span class="il">${l}</span><span class="iv">${v}</span></div>`).join('')}
     </div>`;
   os('ss');
 }
+
 async function doAdvance(sid,next){
-  await sb.from('siparisler').update({status:next}).eq('id',sid);
+  const fb=getFB();
+  await fb.updateDoc(fb.doc(fb.db,'siparisler',sid),{status:next});
   cs('ss');toast('Durum güncellendi: '+(CHIPS[next]?.l||next));
   rDash();rSiparisler();
 }
 
 // BAKİYE
 async function loadBakiye(){
-  const {data}=await sb.from('profiles').select('bakiye').eq('id',ME.id).single();
-  const b=data?.bakiye||0;PROFILE.bakiye=b;
-  document.getElementById('bakiye-val').textContent=b.toLocaleString('tr-TR');
-  return b;
+  const fb=getFB();
+  try{
+    const snap=await fb.getDoc(fb.doc(fb.db,'profiles',ME.uid));
+    const b=snap.data()?.bakiye||0;
+    PROFILE.bakiye=b;
+    document.getElementById('bakiye-val').textContent=b.toLocaleString('tr-TR');
+    return b;
+  }catch(e){return 0;}
 }
+
 async function doBakiyeYukle(){
+  const fb=getFB();
   const amt=+document.getElementById('bakiye-amt').value;
   const cn=document.getElementById('b-cn').value.replace(/\s/g,'');
   const ce=document.getElementById('b-ce').value;
@@ -1109,22 +1179,25 @@ async function doBakiyeYukle(){
   const btn=document.getElementById('bakiye-btn');
   btn.disabled=true;btn.textContent='Yükleniyor...';
   setTimeout(async()=>{
-    const yeni=(PROFILE.bakiye||0)+amt;
-    const {error}=await sb.from('profiles').update({bakiye:yeni}).eq('id',ME.id);
+    try{
+      const yeni=(PROFILE.bakiye||0)+amt;
+      await fb.updateDoc(fb.doc(fb.db,'profiles',ME.uid),{bakiye:yeni});
+      PROFILE.bakiye=yeni;
+      document.getElementById('bakiye-val').textContent=yeni.toLocaleString('tr-TR');
+      cm('m-bakiye');toast(fmt(amt)+' bakiye yüklendi!');
+      ['bakiye-amt','b-cn','b-ce','b-cv'].forEach(id=>document.getElementById(id).value='');
+      rDash();
+    }catch(e){toast('Hata: '+e.message);}
     btn.disabled=false;btn.textContent='Bakiye Yükle';
-    if(error){toast('Hata: '+error.message);return;}
-    PROFILE.bakiye=yeni;
-    document.getElementById('bakiye-val').textContent=yeni.toLocaleString('tr-TR');
-    cm('m-bakiye');toast(fmt(amt)+' bakiye yüklendi!');
-    ['bakiye-amt','b-cn','b-ce','b-cv'].forEach(id=>document.getElementById(id).value='');
-    rDash();
   },1400);
 }
 
 // PROFİL
 async function rProfil(){
-  const {data}=await sb.from('profiles').select('*').eq('id',ME.id).single();
-  if(!data)return;
+  const fb=getFB();
+  const snap=await fb.getDoc(fb.doc(fb.db,'profiles',ME.uid));
+  if(!snap.exists())return;
+  const data=snap.data();
   PROFILE={...PROFILE,...data};
   const set=(id,val)=>{const el=document.getElementById(id);if(el&&val!=null)el.value=val;};
   set('p-firma',data.firma_adi||data.name);
@@ -1144,6 +1217,7 @@ async function rProfil(){
   if(av)av.textContent=(data.firma_adi||data.name||'?').substring(0,2).toUpperCase();
   rKatalog();
 }
+
 function toggleSert(btn,s){
   if(_sertler.includes(s)){_sertler=_sertler.filter(x=>x!==s);btn.classList.remove('on');}
   else{_sertler.push(s);btn.classList.add('on');}
@@ -1152,58 +1226,72 @@ function toggleKat(btn,k){
   if(_katlar.includes(k)){_katlar=_katlar.filter(x=>x!==k);btn.classList.remove('on');}
   else{_katlar.push(k);btn.classList.add('on');}
 }
+
 async function saveProfil(){
+  const fb=getFB();
   const firma=document.getElementById('p-firma').value.trim();
   if(!firma){toast('Firma adı zorunlu');return;}
-  const {error}=await sb.from('profiles').update({
-    firma_adi:firma,name:firma,
-    aciklama:document.getElementById('p-aciklama').value,
-    konum:document.getElementById('p-konum').value,
-    telefon:document.getElementById('p-tel').value,
-    website:document.getElementById('p-web').value,
-    moq:+document.getElementById('p-moq').value||null,
-    teslim_suresi:+document.getElementById('p-gun').value||null,
-    kapasite:document.getElementById('p-kapasite').value,
-    sertifikalar:_sertler,
-    urun_kategorileri:_katlar,
-  }).eq('id',ME.id);
-  if(error){toast('Hata: '+error.message);return;}
-  PROFILE.name=firma;toast('Profil kaydedildi!');
+  try{
+    await fb.updateDoc(fb.doc(fb.db,'profiles',ME.uid),{
+      firma_adi:firma,name:firma,
+      aciklama:document.getElementById('p-aciklama').value,
+      konum:document.getElementById('p-konum').value,
+      telefon:document.getElementById('p-tel').value,
+      website:document.getElementById('p-web').value,
+      moq:+document.getElementById('p-moq').value||null,
+      teslim_suresi:+document.getElementById('p-gun').value||null,
+      kapasite:document.getElementById('p-kapasite').value,
+      sertifikalar:_sertler,
+      urun_kategorileri:_katlar,
+    });
+    PROFILE.name=firma;toast('Profil kaydedildi!');
+  }catch(e){toast('Hata: '+e.message);}
 }
 
 // KATALOG
 async function rKatalog(){
+  const fb=getFB();
   const el=document.getElementById('katalog-list');if(!el)return;
-  const {data}=await sb.from('katalog').select('*').eq('user_id',ME.id).order('created_at',{ascending:false});
-  if(!data||!data.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--ink3);font-size:13px">Henüz ürün eklenmedi</div>';return;}
-  el.innerHTML=data.map(k=>`
-    <div class="kat-item">
-      ${k.gorsel_url?`<img class="kat-img" src="${k.gorsel_url}" onerror="this.style.display='none'">`:`<div class="kat-img-ph">📦</div>`}
-      <div class="kat-body">
-        <div class="kat-title">${k.baslik}</div>
-        ${k.aciklama?`<div class="kat-desc">${k.aciklama}</div>`:''}
-        <div class="kat-tags">${(k.etiketler||[]).map(e=>`<span class="kat-tag">${e}</span>`).join('')}</div>
-      </div>
-      <button onclick="deleteKatalog('${k.id}')" style="background:transparent;border:none;color:var(--ink3);padding:8px 10px;cursor:pointer;font-size:15px;align-self:flex-start">✕</button>
-    </div>`).join('');
+  try{
+    const q=fb.query(fb.collection(fb.db,'katalog'),fb.where('user_id','==',ME.uid),fb.orderBy('createdAt','desc'));
+    const snap=await fb.getDocs(q);
+    if(snap.empty){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--ink3);font-size:13px">Henüz ürün eklenmedi</div>';return;}
+    el.innerHTML=snap.docs.map(d=>{
+      const k={id:d.id,...d.data()};
+      return`<div class="kat-item">
+        ${k.gorsel_url?`<img class="kat-img" src="${k.gorsel_url}" onerror="this.style.display='none'">`:`<div class="kat-img-ph">📦</div>`}
+        <div class="kat-body">
+          <div class="kat-title">${k.baslik}</div>
+          ${k.aciklama?`<div class="kat-desc">${k.aciklama}</div>`:''}
+          <div class="kat-tags">${(k.etiketler||[]).map(e=>`<span class="kat-tag">${e}</span>`).join('')}</div>
+        </div>
+        <button onclick="deleteKatalog('${k.id}')" style="background:transparent;border:none;color:var(--ink3);padding:8px 10px;cursor:pointer;font-size:15px;align-self:flex-start">✕</button>
+      </div>`;
+    }).join('');
+  }catch(e){console.error(e);}
 }
+
 async function addKatalog(){
+  const fb=getFB();
   const baslik=document.getElementById('k-baslik').value.trim();
   if(!baslik){toast('Başlık zorunlu');return;}
   const etiketler=document.getElementById('k-etiket').value.split(',').map(e=>e.trim()).filter(Boolean);
-  const {error}=await sb.from('katalog').insert({
-    user_id:ME.id,baslik,
-    aciklama:document.getElementById('k-aciklama').value,
-    gorsel_url:document.getElementById('k-gorsel').value||null,
-    etiketler,
-  });
-  if(error){toast('Hata: '+error.message);return;}
-  cm('m-katalog');
-  ['k-baslik','k-aciklama','k-gorsel','k-etiket'].forEach(id=>document.getElementById(id).value='');
-  toast('Ürün eklendi!');rKatalog();
+  try{
+    await fb.addDoc(fb.collection(fb.db,'katalog'),{
+      user_id:ME.uid,baslik,
+      aciklama:document.getElementById('k-aciklama').value,
+      gorsel_url:document.getElementById('k-gorsel').value||null,
+      etiketler,createdAt:fb.serverTimestamp()
+    });
+    cm('m-katalog');
+    ['k-baslik','k-aciklama','k-gorsel','k-etiket'].forEach(id=>document.getElementById(id).value='');
+    toast('Ürün eklendi!');rKatalog();
+  }catch(e){toast('Hata: '+e.message);}
 }
+
 async function deleteKatalog(id){
-  await sb.from('katalog').delete().eq('id',id);
+  const fb=getFB();
+  await fb.deleteDoc(fb.doc(fb.db,'katalog',id));
   toast('Silindi.');rKatalog();
 }
 
