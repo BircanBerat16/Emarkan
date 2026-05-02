@@ -169,7 +169,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 .role-chip{font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;border:1px solid var(--border);color:var(--ink3)}
 #bakiye-chip{display:none;font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;background:var(--teal-l);color:var(--teal);border:1px solid rgba(45,106,90,.2);cursor:pointer}
 .logout-btn{background:transparent;border:1px solid var(--border);border-radius:20px;color:var(--ink3);font-size:11px;padding:4px 10px;cursor:pointer;font-family:inherit}
-#app-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:72px}
+#app-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:72px;min-height:0}
 #bnav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);display:flex;padding:6px 0 max(8px,env(safe-area-inset-bottom));z-index:100}
 .ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;cursor:pointer;border:none;background:transparent;font-family:inherit;color:var(--ink3);font-size:10px;transition:color .15s;position:relative}
 .ni.on{color:var(--warm2)}.ni svg{width:21px;height:21px;stroke-width:1.5;fill:none;stroke:currentColor}
@@ -307,21 +307,20 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 .pbody-info{font-size:13px;color:var(--ink3)}
 .pbody-info strong{color:var(--ink);font-weight:500}
 
-@media(max-width:767px){
-  #sidebar{display:none!important}
-  #app-content{padding-bottom:72px!important}
-  #tal-list{grid-template-columns:repeat(2,1fr)!important;gap:12px!important}
-  #bnav{display:flex!important}
-}
+/* MOBILE - default */
+#sidebar{display:none}
+#app-content{padding-bottom:72px}
+#bnav{display:flex}
+
+/* DESKTOP */
 @media(min-width:768px){
-  #v-auth{padding:40px 24px}
-  #v-app{flex-direction:row!important}
-  #topbar{display:none!important}
-  #app-body{display:flex!important;flex:1;overflow:hidden;flex-direction:row}
-  #sidebar{display:flex!important;width:220px;flex-shrink:0}
-  #app-content{flex:1;overflow-y:auto;padding-bottom:0!important;display:flex;justify-content:center}
-  #app-content>.pg.on{width:100%;max-width:680px;padding-bottom:32px}
-  #bnav{display:none!important}
+  #topbar{display:none}
+  #v-app{flex-direction:row}
+  #app-body{display:flex;flex:1;overflow:hidden}
+  #sidebar{display:flex;width:220px;min-width:220px;flex-shrink:0;flex-direction:column}
+  #app-content{flex:1;overflow-y:auto;padding-bottom:0;display:block}
+  #bnav{display:none}
+  #tal-list{grid-template-columns:repeat(4,1fr)}
   .sgrid{grid-template-columns:repeat(4,1fr)}
   .sp{padding:0}.ph{padding:20px 0 14px}.sbar{padding:10px 0}
   .fstrip{padding:8px 0 2px}.card{margin:0}
@@ -479,7 +478,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
       <button class="logout-btn" onclick="doLogout()">Çıkış</button>
     </div>
   </div>
-  <div id="app-body">
+  <div id="app-body" style="flex:1;overflow:hidden;display:flex;min-height:0">
   <div id="sidebar">
     <div class="sidebar-logo" onclick="showView('landing')">emarkan<span>.</span></div>
     <button class="si on" id="si-dash" onclick="gp('dash')">
