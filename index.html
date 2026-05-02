@@ -287,7 +287,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 .talep-img-count{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:3px 8px;border-radius:20px}
 
 
-@media(max-width:640px){#tal-list{grid-template-columns:repeat(2,1fr);gap:10px}}
+@media(max-width:767px){#tal-list{grid-template-columns:repeat(2,1fr)!important;gap:12px!important}}
 
 /* AIRBNB STYLE PRODUCER CARDS */
 .plist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding:0}
@@ -320,7 +320,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
   #sidebar{display:flex;width:220px;min-width:220px;flex-shrink:0;flex-direction:column}
   #app-content{flex:1;overflow-y:auto;padding-bottom:0;display:block}
   #bnav{display:none}
-  #tal-list{grid-template-columns:repeat(4,1fr)}
+  #tal-list{grid-template-columns:repeat(4,1fr)!important}
   .sgrid{grid-template-columns:repeat(4,1fr)}
   .sp{padding:0}.ph{padding:20px 0 14px}.sbar{padding:10px 0}
   .fstrip{padding:8px 0 2px}.card{margin:0}
@@ -882,7 +882,7 @@ function renderTalepGrid(list){
     re.innerHTML='<div class="empty"><div class="empty-t">Bu kategoride talep yok</div></div>';
     return;
   }
-  const cols=window.innerWidth<768?2:4;re.style.cssText=`display:grid;grid-template-columns:repeat(${cols},1fr);gap:${cols===2?'12px':'20px'}`;
+  const cols=window.innerWidth<768?2:4;re.style.cssText='display:grid;grid-template-columns:repeat('+cols+',1fr);gap:'+(cols===2?'12px':'20px');
   re.innerHTML=list.map(t=>{
     const imgs=t.gorseller&&t.gorseller.length?t.gorseller:[];
     const imgContent=imgs.length>0
@@ -1261,7 +1261,7 @@ async function rUreticiDash(){
 
     renderTalepGrid(list);
     return;
-    const cols=window.innerWidth<768?2:4;re.style.cssText=`display:grid;grid-template-columns:repeat(${cols},1fr);gap:${cols===2?'12px':'20px'}`;
+    const cols=window.innerWidth<768?2:4;re.style.cssText='display:grid;grid-template-columns:repeat('+cols+',1fr);gap:'+(cols===2?'12px':'20px');
     re.innerHTML=list.map(t=>{
       const imgs=t.gorseller&&t.gorseller.length?t.gorseller:[];
       const imgContent=imgs.length>0
