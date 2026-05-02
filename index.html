@@ -835,13 +835,14 @@ function startApp(){
   const d=new Date();
   document.getElementById('dash-date').textContent=d.toLocaleDateString('tr-TR',{weekday:'long',day:'numeric',month:'long'});
   document.getElementById('ni-pazar').style.display=m?'':'none';
+  document.getElementById('ni-tal').style.display=m?'':'none';
   document.getElementById('yeni-tal-btn').style.display=m?'':'none';
   document.getElementById('dash-fab').style.display=m?'flex':'none';
   document.getElementById('ni-profil').style.display=m?'none':'';
   document.getElementById('bakiye-chip').style.display=m?'none':'';
   document.getElementById('tal-title').textContent=m?'Üretim Taleplerim':'Açık Talepler';
   if(!m)loadBakiye();
-  if(m){gp('dash');rProducers();}else{gp('tal');}
+  gp('dash');if(m)rProducers();
 }
 
 function gp(id){
