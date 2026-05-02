@@ -1104,9 +1104,14 @@ async function rDash(){
   re.innerHTML=items.map(it=>{
     const isTalep=!('tutar' in it);
     const nm=m?(it.uretici_adi||it.marka_adi||it.urun):(it.marka_adi||it.urun);
-    return`<div class="ci" onclick="${isTalep?`openTalep('${it.id}')`:`openSiparis('${it.id}')`}">
-      <div class="av">${(nm||'?').substring(0,2)}</div>
-      <div class="im"><div class="in">${nm||it.urun}</div><div class="id2">${it.adet} adet · ${it.urun}</div></div>
+    const imgs=it.gorseller&&it.gorseller.length?it.gorseller:[];
+    const hasImg=isTalep&&imgs.length>0;
+    return`<div class="ci" onclick="${isTalep?`openTalep('${it.id}')`:`openSiparis('${it.id}')`}" style="padding:10px 16px">
+      ${hasImg
+        ?`<img src="${imgs[0]}" style="width:44px;height:44px;border-radius:10px;object-fit:cover;flex-shrink:0">`
+        :`<div class="av">${(nm||'?').substring(0,2)}</div>`
+      }
+      <div class="im"><div class="in">${isTalep?it.urun:nm}</div><div class="id2">${it.adet} adet${it.urun&&!isTalep?' · '+it.urun:''}</div></div>
       <div class="ir">${chip(it.status)}</div>
     </div>`;
   }).join('');
@@ -1289,9 +1294,16 @@ async function updTeklif(){
   }
 }
 async function proceedPay(){
+  const fb=getFB();
   const fiyat=+document.getElementById('tk-fiyat').value;
   const gun=+document.getElementById('tk-gun').value;
   if(!fiyat||!gun){toast('Fiyat ve teslim süresi zorunlu');return;}
+  // Daha önce teklif verildi mi?
+  try{
+    const q=fb.query(fb.collection(fb.db,'teklifler'),fb.where('talep_id','==',curTalepId),fb.where('user_id','==',ME.uid));
+    const snap=await fb.getDocs(q);
+    if(!snap.empty){toast('Bu talepe zaten teklif verdiniz.');return;}
+  }catch(e){}
   const list=await getTalepler();
   const t=list.find(x=>x.id===curTalepId);
   _tkData={fiyat,gun,notlar:document.getElementById('tk-not').value,fee:TEKLIF_UCRETI};
