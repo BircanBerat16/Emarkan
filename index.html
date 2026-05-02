@@ -1012,7 +1012,7 @@ async function rUreticiDash(){
     <div class="scard ${(PROFILE.bakiye||0)<TEKLIF_UCRETI?'hi':''}" onclick="om('m-bakiye')" style="cursor:pointer">
       <div class="slabel">Bakiye</div>
       <div class="sval">${fmt(PROFILE.bakiye||0)}</div>
-      <div class="ssub">${(PROFILE.bakiye||0)<TEKLIF_UCRETI?'Bakiye yükle ↑':'Aktif'}</div>
+      <div class="ssub">${(PROFILE.bakiye||0)<85?'Bakiye yükle ↑':'Aktif'}</div>
     </div>
     <div class="scard">
       <div class="slabel">Verilen teklif</div>
@@ -1088,7 +1088,7 @@ async function rDash(){
     {l:'Toplam harcama',v:fmt(siparisler.reduce((a,s)=>a+(s.tutar||0),0)),hi:false},
   ]:[
     {l:'Açık talep',v:talepler.filter(t=>t.status==='open').length,hi:talepler.some(t=>t.status==='open'),s:'Teklif verebilirsin'},
-    {l:'Bakiye',v:fmt(PROFILE.bakiye||0),hi:(PROFILE.bakiye||0)<TEKLIF_UCRETI,s:(PROFILE.bakiye||0)<TEKLIF_UCRETI?'Bakiye yükle ↑':'Aktif',click:'m-bakiye'},
+    {l:'Bakiye',v:fmt(PROFILE.bakiye||0),hi:(PROFILE.bakiye||0)<85,s:(PROFILE.bakiye||0)<85?'Bakiye yükle ↑':'Aktif',click:'m-bakiye'},
     {l:'Aktif sipariş',v:siparisler.filter(s=>s.status!=='delivered').length,hi:false},
     {l:'Toplam kazanç',v:fmt(siparisler.filter(s=>s.status==='delivered').reduce((a,s)=>a+(s.tutar||0),0)),hi:false},
   ];
@@ -1289,7 +1289,7 @@ async function updTeklif(){
   if(t){
     document.getElementById('mt-sub').textContent=t.marka_adi+' · '+t.adet+' adet '+t.urun;
     document.getElementById('tk-total').textContent=fmt(f*t.adet);
-    document.getElementById('tk-fee').textContent=fmt(TEKLIF_UCRETI);
+    const uc=getTeklifUcreti();document.getElementById('tk-fee').textContent=fmt(uc);
     document.getElementById('tk-fee-box').style.display='';
   }
 }
@@ -1306,14 +1306,18 @@ async function proceedPay(){
   }catch(e){}
   const list=await getTalepler();
   const t=list.find(x=>x.id===curTalepId);
-  _tkData={fiyat,gun,notlar:document.getElementById('tk-not').value,fee:TEKLIF_UCRETI};
+  const list2=await getTalepler();
+  const t2=list2.find(x=>x.id===curTalepId);
+  const toplamTeklif=fiyat*(t2?.adet||0);
+  const dinamikUcret=getTeklifUcreti(toplamTeklif);
+  _tkData={fiyat,gun,notlar:document.getElementById('tk-not').value,fee:dinamikUcret};
   const bakiye=await loadBakiye();
   cm('m-teklif');
-  document.getElementById('pay-amt').textContent=fmt(TEKLIF_UCRETI);
+  document.getElementById('pay-amt').textContent=fmt(_tkData.fee||TEKLIF_UCRETI);
   document.getElementById('odeme-sub').textContent=t?t.urun+' · Teklif iletim ücreti':'';
   document.getElementById('mevcut-bakiye').textContent=fmt(bakiye);
-  document.getElementById('odeme-dusulecek').textContent=fmt(TEKLIF_UCRETI);
-  if(bakiye<TEKLIF_UCRETI){toast('Bakiyeniz yetersiz.');om('m-bakiye');}
+  document.getElementById('odeme-dusulecek').textContent=fmt(_tkData.fee||TEKLIF_UCRETI);
+  if(bakiye<(_tkData.fee||TEKLIF_UCRETI)){toast('Bakiyeniz yetersiz.');om('m-bakiye');}
   else om('m-odeme');
 }
 
@@ -1321,16 +1325,17 @@ async function doPayment(){
   const fb=getFB();
   const btn=document.getElementById('pay-btn');
   const bakiye=PROFILE.bakiye||0;
-  if(bakiye<TEKLIF_UCRETI){toast('Bakiyeniz yetersiz.');cm('m-odeme');om('m-bakiye');return;}
+  const ucret=_tkData.fee||TEKLIF_UCRETI;
+  if(bakiye<ucret){toast('Bakiyeniz yetersiz.');cm('m-odeme');om('m-bakiye');return;}
   btn.disabled=true;btn.innerHTML='<span style="display:inline-block;width:13px;height:13px;border:2px solid rgba(0,0,0,.15);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:5px"></span>İşleniyor...';
   try{
-    const yeni=bakiye-TEKLIF_UCRETI;
+    const yeni=bakiye-ucret;
     await fb.updateDoc(fb.doc(fb.db,'profiles',ME.uid),{bakiye:yeni});
     PROFILE.bakiye=yeni;
     document.getElementById('bakiye-val').textContent=yeni.toLocaleString('tr-TR');
     await fb.addDoc(fb.collection(fb.db,'teklifler'),{
       talep_id:curTalepId,user_id:ME.uid,uretici_adi:PROFILE.name,
-      fiyat:_tkData.fiyat,gun:_tkData.gun,notlar:_tkData.notlar,fee:TEKLIF_UCRETI,
+      fiyat:_tkData.fiyat,gun:_tkData.gun,notlar:_tkData.notlar,fee:ucret,
       createdAt:fb.serverTimestamp()
     });
     await fb.updateDoc(fb.doc(fb.db,'talepler',curTalepId),{status:'offered'});
