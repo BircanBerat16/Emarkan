@@ -609,7 +609,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
             <div class="fl"><label>Website</label><input id="p-web" type="url" placeholder="https://"></div>
           </div>
         </div>
-        <div class="card mb" id="profil-uretim-card" style="padding:14px">
+        <div id="profil-uretim-card"><div class="card mb" id="profil-uretim-card" style="padding:14px">
           <div style="font-size:13px;font-weight:500;color:var(--ink);margin-bottom:12px">Üretim bilgileri</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
             <div class="fl"><label>Min. sipariş (adet)</label><input id="p-moq" type="number" placeholder="500"></div>
@@ -630,7 +630,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
               <!-- Dinamik olarak doldurulacak -->
             </div>
           </div>
-        </div>
+        </div></div>
         <div class="card" style="padding:14px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
             <div style="font-size:13px;font-weight:500;color:var(--ink)">Katalog</div>
@@ -2010,8 +2010,7 @@ async function rProfil(){
   if(av){av.style.display='';av.textContent=(PROFILE.name||'?').substring(0,2).toUpperCase();}
 
   const snap=await fb.getDoc(fb.doc(fb.db,'profiles',ME.uid));
-  if(!snap.exists())return;
-  const data=snap.data();
+  const data=snap.exists()?snap.data():{};
   PROFILE={...PROFILE,...data};
   const set=(id,val)=>{const el=document.getElementById(id);if(el&&val!=null)el.value=val;};
   // Kapak ve logo
@@ -2088,7 +2087,9 @@ async function saveProfil(){
       updateData.sertifikalar=_sertler;
       updateData.urun_kategorileri=_katlar;
     }
-    await fb.updateDoc(fb.doc(fb.db,'profiles',ME.uid),updateData);
+    console.log('Saving profile:', updateData);
+    await fb.setDoc(fb.doc(fb.db,'profiles',ME.uid),updateData,{merge:true});
+    console.log('Profile saved successfully');
     PROFILE={...PROFILE,...updateData};
     toast('Profil kaydedildi!');
   }catch(e){toast('Hata: '+e.message);console.error(e);}
