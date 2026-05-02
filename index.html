@@ -1863,6 +1863,22 @@ async function doBakiyeYukle(){
 // PROFİL
 async function rProfil(){
   const fb=getFB();
+  // Önce tüm alanları sıfırla
+  ['p-firma','p-aciklama','p-konum','p-tel','p-web','p-moq','p-gun','p-kapasite'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  _sertler=[];_katlar=[];
+  document.querySelectorAll('.sert-btn').forEach(b=>b.classList.remove('on'));
+  // Kapak ve logo sıfırla
+  const ki=document.getElementById('profil-kapak-img');
+  const kp=document.getElementById('profil-kapak-ph');
+  if(ki){ki.src='';ki.style.display='none';}
+  if(kp)kp.style.display='flex';
+  const li=document.getElementById('profil-logo-img');
+  const av1878=document.getElementById('profil-av');
+  if(li){li.src='';li.style.display='none';}
+  if(av){av.style.display='';av.textContent=(PROFILE.name||'?').substring(0,2).toUpperCase();}
+
   const snap=await fb.getDoc(fb.doc(fb.db,'profiles',ME.uid));
   if(!snap.exists())return;
   const data=snap.data();
@@ -1877,7 +1893,7 @@ async function rProfil(){
   }
   if(data.logo_url){
     const li=document.getElementById('profil-logo-img');
-    const av=document.getElementById('profil-av');
+    const av1896=document.getElementById('profil-av');
     if(li){li.src=data.logo_url;li.style.display='block';}
     if(av)av.style.display='none';
   }
@@ -1904,8 +1920,8 @@ async function rProfil(){
       }</div></div>`
     ).join('');
   }
-  const av=document.getElementById('profil-av');
-  if(av)av.textContent=(data.firma_adi||data.name||'?').substring(0,2).toUpperCase();
+  const av1923=document.getElementById('profil-av');
+  if(profAv)profAv.textContent=(data.firma_adi||data.name||'?').substring(0,2).toUpperCase();
   rKatalog();
 }
 
@@ -1982,7 +1998,7 @@ async function uploadLogo(input){
     const url=await uploadToCloudinary(file);
     const img=document.getElementById('profil-logo-img');
     img.src=url;img.style.display='block';
-    const av=document.getElementById('profil-av');
+    const av2001=document.getElementById('profil-av');
     if(av)av.style.display='none';
     const fb=getFB();
     await fb.updateDoc(fb.doc(fb.db,'profiles',ME.uid),{logo_url:url});
