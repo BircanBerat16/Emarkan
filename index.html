@@ -409,6 +409,11 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
   </section>
   <footer class="l-footer">
     <div class="l-flogo">emarkan<span>.</span></div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap">
+      <button onclick="om('m-kvkk')" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:inherit;padding:0">KVKK</button>
+      <button onclick="om('m-gizlilik')" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:inherit;padding:0">Gizlilik Politikası</button>
+      <button onclick="om('m-kosullar')" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:inherit;padding:0">Kullanım Koşulları</button>
+    </div>
     <div class="l-fcopy">© 2026 emarkan. Tüm hakları saklıdır.</div>
   </footer>
 </div>
@@ -438,6 +443,14 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
           <button class="ropt on" id="ro-m" onclick="pickRole('marka')">Marka / Alıcı</button>
           <button class="ropt" id="ro-u" onclick="pickRole('uretici')">Üretici</button>
         </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px">
+        <input type="checkbox" id="sozlesme-onay" style="margin-top:3px;width:16px;height:16px;cursor:pointer;accent-color:var(--teal);flex-shrink:0">
+        <label for="sozlesme-onay" style="font-size:12px;color:var(--ink3);line-height:1.6;cursor:pointer">
+          <button type="button" onclick="om('m-kvkk')" style="background:none;border:none;color:var(--teal);font-size:12px;cursor:pointer;padding:0;text-decoration:underline;font-family:inherit">KVKK Aydınlatma Metni</button>'ni,
+          <button type="button" onclick="om('m-gizlilik')" style="background:none;border:none;color:var(--teal);font-size:12px;cursor:pointer;padding:0;text-decoration:underline;font-family:inherit">Gizlilik Politikası</button>'nı ve
+          <button type="button" onclick="om('m-kosullar')" style="background:none;border:none;color:var(--teal);font-size:12px;cursor:pointer;padding:0;text-decoration:underline;font-family:inherit">Kullanım Koşulları</button>'nı okudum, kabul ediyorum.
+        </label>
       </div>
       <div class="err-txt" id="rerr"></div>
       <button class="btn btn-ink" id="reg-btn" onclick="doReg()">Kayıt ol</button>
@@ -741,6 +754,90 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
   </div>
 </div>
 
+
+<!-- KVKK MODAL -->
+<div class="mov" id="m-kvkk" onclick="if(event.target===this)cm('m-kvkk')">
+  <div class="modal" style="max-height:85dvh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="mh" style="margin:0">KVKK Aydınlatma Metni</div>
+      <button onclick="cm('m-kvkk')" style="background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--ink3)">✕</button>
+    </div>
+    <div style="font-size:13px;color:var(--ink2);line-height:1.7">
+      <p><strong>Veri Sorumlusu:</strong> Dilan Bircan Cambel Tekstil<br>
+      Yunusemre Mahallesi 10. Murat Sokak No:1 Yıldırım / Bursa<br>
+      info@emarkan.com.tr</p>
+      <br>
+      <p><strong>İşlenen Kişisel Veriler:</strong> Ad-soyad, firma adı, e-posta, telefon, adres, platform kullanım verileri, ödeme kayıtları.</p>
+      <br>
+      <p><strong>İşleme Amaçları:</strong> Platform üyeliğinin yönetilmesi, marka-üretici eşleştirmesi, teklif ve ödeme süreçlerinin yürütülmesi, yasal yükümlülüklerin yerine getirilmesi.</p>
+      <br>
+      <p><strong>Hukuki Dayanak:</strong> Sözleşmenin ifası, hukuki yükümlülük, meşru menfaat (KVKK Md. 5).</p>
+      <br>
+      <p><strong>Veri Aktarımı:</strong> iyzico (ödeme), Google Firebase (altyapı), Cloudinary (görsel), yetkili kamu kurumları.</p>
+      <br>
+      <p><strong>Haklarınız (KVKK Md. 11):</strong> Verilerinize erişme, düzeltme, silme, itiraz etme ve tazminat talep etme haklarına sahipsiniz. Başvuru: info@emarkan.com.tr</p>
+      <br>
+      <p style="color:var(--ink3);font-size:12px">Son güncelleme: Mayıs 2026</p>
+    </div>
+  </div>
+</div>
+
+<!-- GİZLİLİK MODAL -->
+<div class="mov" id="m-gizlilik" onclick="if(event.target===this)cm('m-gizlilik')">
+  <div class="modal" style="max-height:85dvh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="mh" style="margin:0">Gizlilik Politikası</div>
+      <button onclick="cm('m-gizlilik')" style="background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--ink3)">✕</button>
+    </div>
+    <div style="font-size:13px;color:var(--ink2);line-height:1.7">
+      <p>emarkan.com.tr, Dilan Bircan Cambel Tekstil tarafından işletilen bir tekstil B2B platformudur.</p>
+      <br>
+      <p><strong>Toplanan Bilgiler:</strong> Kayıt bilgileri (ad, e-posta, şifre), profil bilgileri, platform işlemleri (talepler, teklifler, mesajlar), teknik veriler (IP, tarayıcı).</p>
+      <br>
+      <p><strong>Kullanım Amacı:</strong> Verileriniz yalnızca platform hizmetlerinin sunulması amacıyla kullanılır. Üçüncü taraflara satılmaz veya ticari amaçla paylaşılmaz.</p>
+      <br>
+      <p><strong>Güvenlik:</strong> Google Firebase Authentication, HTTPS/TLS şifreleme ve Firestore güvenlik kuralları ile verileriniz korunmaktadır.</p>
+      <br>
+      <p><strong>Üçüncü Taraflar:</strong> Google Firebase (altyapı), Cloudinary (görsel depolama), iyzico (ödeme), Vercel (hosting).</p>
+      <br>
+      <p><strong>Saklama Süresi:</strong> Aktif hesaplar için hesap kapatılana kadar; finansal kayıtlar 10 yıl saklanır.</p>
+      <br>
+      <p><strong>İletişim:</strong> info@emarkan.com.tr</p>
+      <br>
+      <p style="color:var(--ink3);font-size:12px">Son güncelleme: Mayıs 2026</p>
+    </div>
+  </div>
+</div>
+
+<!-- KULLANIM KOŞULLARI MODAL -->
+<div class="mov" id="m-kosullar" onclick="if(event.target===this)cm('m-kosullar')">
+  <div class="modal" style="max-height:85dvh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="mh" style="margin:0">Kullanım Koşulları</div>
+      <button onclick="cm('m-kosullar')" style="background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--ink3)">✕</button>
+    </div>
+    <div style="font-size:13px;color:var(--ink2);line-height:1.7">
+      <p><strong>Hizmet Tanımı:</strong> emarkan, tekstil üreticileri ile perakendeci markaları buluşturan bir B2B aracılık platformudur. Platform, taraflar arasındaki ticari ilişkiye taraf değildir.</p>
+      <br>
+      <p><strong>Marka Kullanıcıları:</strong> Üretim talebi oluşturabilir, teklif alabilir, mesajlaşabilir. Ücretsizdir.</p>
+      <br>
+      <p><strong>Üretici Kullanıcılar:</strong> Açık talepleri görüntüleyebilir, teklif iletebilir. Her teklif için 85₺-250₺ arasında platform ücreti bakiyeden düşülür.</p>
+      <br>
+      <p><strong>Cayma Hakkı:</strong> Teklif iletim ücreti iade edilmez; zira hizmet anında ifa edilmektedir. Kullanılmayan bakiye iade talep edilebilir.</p>
+      <br>
+      <p><strong>Yasaklı Faaliyetler:</strong> Sahte teklif/talep oluşturma, platform dışına yönlendirme, sistem kötüye kullanımı yasaktır ve hesap kapatılmasına neden olabilir.</p>
+      <br>
+      <p><strong>Sorumluluk Sınırı:</strong> Platform, üretici-marka arasındaki sipariş, kalite veya ödeme anlaşmazlıklarından sorumlu değildir.</p>
+      <br>
+      <p><strong>Yetkili Mahkeme:</strong> Bursa mahkemeleri yetkilidir. Türk Hukuku uygulanır.</p>
+      <br>
+      <p><strong>İletişim:</strong> info@emarkan.com.tr</p>
+      <br>
+      <p style="color:var(--ink3);font-size:12px">Son güncelleme: Mayıs 2026</p>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -818,6 +915,8 @@ async function doReg(){
   const err=document.getElementById('rerr');
   const btn=document.getElementById('reg-btn');
   err.textContent='';
+  const onay=document.getElementById('sozlesme-onay');
+  if(!onay||!onay.checked){err.textContent='Lütfen kullanım koşullarını kabul edin';return;}
   if(!name||!email||!pass){err.textContent='Tüm alanlar zorunlu';return;}
   if(pass.length<6){err.textContent='Şifre en az 6 karakter';return;}
   btn.disabled=true;btn.textContent='Kayıt olunuyor...';
