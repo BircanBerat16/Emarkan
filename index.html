@@ -250,6 +250,15 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 .dh-d2{position:absolute;right:50px;bottom:-40px;width:100px;height:100px;border-radius:50%;background:rgba(45,106,90,.12)}
 
 
+
+.upload-area{border:1.5px dashed var(--border2);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;background:var(--cream2)}
+.upload-area:hover{border-color:var(--warm);background:var(--warm-l)}
+.upload-area input{display:none}
+.upload-preview{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.upload-thumb{width:80px;height:80px;border-radius:10px;object-fit:cover;border:1px solid var(--border)}
+.upload-thumb-wrap{position:relative;width:80px;height:80px}
+.upload-del{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--ink);color:var(--white);border:none;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;line-height:1}
+
 /* AIRBNB STYLE PRODUCER CARDS */
 .plist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding:0}
 .pcard{background:var(--white);border:none;border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;margin-bottom:0;box-shadow:none}
@@ -559,10 +568,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
     <div class="fl"><label>Bütçe (birim ₺) <span style="font-weight:400;color:var(--ink3);text-transform:none;font-size:10px">— opsiyonel</span></label><input id="nt-butce" type="number" placeholder="örn. 150"></div>
     <div class="fl"><label>Notlar</label><textarea id="nt-not" placeholder="Kumaş türü, beden aralığı, renk..."></textarea></div>
     <div class="fl">
-      <label>Görseller (opsiyonel, max 3)</label>
-      <input id="nt-img1" type="url" placeholder="Görsel 1 URL" style="margin-bottom:6px">
-      <input id="nt-img2" type="url" placeholder="Görsel 2 URL" style="margin-bottom:6px">
-      <input id="nt-img3" type="url" placeholder="Görsel 3 URL">
+      <label>Görseller <span style="font-weight:400;color:var(--ink3);text-transform:none;font-size:10px">— opsiyonel, max 3</span></label>
+      <div class="upload-area" id="talep-upload-area" onclick="document.getElementById('talep-file').click()">
+        <input type="file" id="talep-file" accept="image/*" multiple onchange="handleTalepFiles(this)">
+        <div style="font-size:13px;color:var(--ink3)">+ Görsel ekle (max 3)</div>
+        <div style="font-size:11px;color:var(--ink3);margin-top:3px">JPG, PNG, WEBP</div>
+      </div>
+      <div class="upload-preview" id="talep-preview"></div>
     </div>
     <button class="btn btn-teal" id="yeni-submit-btn" onclick="subTalep()">Talebi Yayınla</button>
     <button class="btn btn-ghost" style="margin-top:8px" onclick="cm('m-yeni')">İptal</button>
@@ -641,7 +653,14 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
     <div class="ms">Pazar sayfasında markalara görünür</div>
     <div class="fl"><label>Başlık</label><input id="k-baslik" type="text" placeholder="örn. Organik Pamuk Koleksiyonu"></div>
     <div class="fl"><label>Açıklama</label><textarea id="k-aciklama" placeholder="Ürün hakkında kısa açıklama..."></textarea></div>
-    <div class="fl"><label>Görsel URL</label><input id="k-gorsel" type="url" placeholder="https://...jpg"></div>
+    <div class="fl">
+      <label>Görsel <span style="font-weight:400;color:var(--ink3);text-transform:none;font-size:10px">— opsiyonel</span></label>
+      <div class="upload-area" id="katalog-upload-area" onclick="document.getElementById('katalog-file').click()">
+        <input type="file" id="katalog-file" accept="image/*" onchange="handleKatalogFile(this)">
+        <div style="font-size:13px;color:var(--ink3)" id="katalog-upload-txt">+ Görsel seç</div>
+      </div>
+      <div id="katalog-preview"></div>
+    </div>
     <div class="fl"><label>Etiketler (virgülle ayır)</label><input id="k-etiket" type="text" placeholder="pamuk, organik, tişört"></div>
     <button class="btn btn-teal" onclick="addKatalog()">Kaydet</button>
     <button class="btn btn-ghost" style="margin-top:8px" onclick="cm('m-katalog')">İptal</button>
@@ -943,7 +962,7 @@ async function rDash(){
 
 // YENİ TALEP
 function openNewTalep(){
-  ['nt-urun','nt-adet','nt-tarih','nt-butce','nt-not','nt-img1','nt-img2','nt-img3'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['nt-urun','nt-adet','nt-tarih','nt-butce','nt-not'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); initTalepUpload();
   om('m-yeni');
 }
 async function subTalep(){
@@ -954,11 +973,7 @@ async function subTalep(){
   const btn=document.getElementById('yeni-submit-btn');
   btn.disabled=true;btn.textContent='Yayınlanıyor...';
   try{
-    const gorseller=[
-      document.getElementById('nt-img1').value,
-      document.getElementById('nt-img2').value,
-      document.getElementById('nt-img3').value,
-    ].filter(Boolean);
+    const gorseller=[..._talepGorseller];
     await fb.addDoc(fb.collection(fb.db,'talepler'),{
       user_id:ME.uid,marka_adi:PROFILE.name,urun,adet,
       tarih:document.getElementById('nt-tarih').value||null,
@@ -1289,6 +1304,23 @@ async function saveProfil(){
 }
 
 // KATALOG
+
+async function handleKatalogFile(input){
+  const file = input.files[0];
+  if(!file) return;
+  document.getElementById('katalog-upload-txt').textContent = 'Yükleniyor...';
+  try{
+    const url = await uploadToCloudinary(file);
+    _katalogGorsel = url;
+    document.getElementById('katalog-preview').innerHTML = `
+      <div class="upload-thumb-wrap" style="margin-top:8px">
+        <img class="upload-thumb" src="${url}">
+        <button class="upload-del" onclick="_katalogGorsel=null;document.getElementById('katalog-preview').innerHTML='';document.getElementById('katalog-upload-txt').textContent='+ Görsel seç'">✕</button>
+      </div>`;
+    document.getElementById('katalog-upload-txt').textContent = '✓ Yüklendi';
+  }catch(e){ toast('Görsel yüklenemedi'); document.getElementById('katalog-upload-txt').textContent = '+ Görsel seç'; }
+  input.value = '';
+}
 async function rKatalog(){
   const fb=getFB();
   const el=document.getElementById('katalog-list');if(!el)return;
@@ -1320,11 +1352,14 @@ async function addKatalog(){
     await fb.addDoc(fb.collection(fb.db,'katalog'),{
       user_id:ME.uid,baslik,
       aciklama:document.getElementById('k-aciklama').value,
-      gorsel_url:document.getElementById('k-gorsel').value||null,
+      gorsel_url:_katalogGorsel||null,
       etiketler,createdAt:fb.serverTimestamp()
     });
     cm('m-katalog');
-    ['k-baslik','k-aciklama','k-gorsel','k-etiket'].forEach(id=>document.getElementById(id).value='');
+    ['k-baslik','k-aciklama','k-etiket'].forEach(id=>document.getElementById(id).value='');
+    _katalogGorsel=null;
+    const kprev=document.getElementById('katalog-preview');if(kprev)kprev.innerHTML='';
+    const ktxt=document.getElementById('katalog-upload-txt');if(ktxt)ktxt.textContent='+ Görsel seç';
     toast('Ürün eklendi!');rKatalog();
   }catch(e){toast('Hata: '+e.message);}
 }
@@ -1352,6 +1387,67 @@ function toast(msg){
   const el=document.getElementById('toast');
   el.textContent=msg;el.classList.add('on');
   clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),3400);
+}
+
+
+// CLOUDINARY
+const CLOUD_NAME = 'dplns9y0e';
+const UPLOAD_PRESET = 'emarkan';
+
+async function uploadToCloudinary(file){
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', UPLOAD_PRESET);
+  fd.append('folder', 'emarkan');
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+    method: 'POST', body: fd
+  });
+  const data = await res.json();
+  if(data.secure_url) return data.secure_url;
+  throw new Error('Yükleme başarısız');
+}
+
+let _talepGorseller = [];
+let _katalogGorsel = null;
+
+function initTalepUpload(){
+  _talepGorseller = [];
+  renderTalepPreviews();
+}
+
+function renderTalepPreviews(){
+  const el = document.getElementById('talep-preview');
+  if(!el) return;
+  el.innerHTML = _talepGorseller.map((url,i) => `
+    <div class="upload-thumb-wrap">
+      <img class="upload-thumb" src="${url}">
+      <button class="upload-del" onclick="removeTalepGorsel(${i})">✕</button>
+    </div>`).join('');
+  // Yükleme alanını gizle max 3'te
+  const area = document.getElementById('talep-upload-area');
+  if(area) area.style.display = _talepGorseller.length >= 3 ? 'none' : '';
+}
+
+function removeTalepGorsel(i){
+  _talepGorseller.splice(i,1);
+  renderTalepPreviews();
+}
+
+async function handleTalepFiles(input){
+  const files = Array.from(input.files).slice(0, 3 - _talepGorseller.length);
+  if(!files.length) return;
+  const btn = document.getElementById('yeni-submit-btn');
+  const area = document.getElementById('talep-upload-area');
+  area.querySelector('div').textContent = 'Yükleniyor...';
+  try{
+    for(const file of files){
+      const url = await uploadToCloudinary(file);
+      _talepGorseller.push(url);
+    }
+  }catch(e){ toast('Görsel yüklenemedi: '+e.message); }
+  area.querySelector('div').textContent = '+ Görsel ekle (max 3)';
+  input.value = '';
+  renderTalepPreviews();
 }
 
 bootApp();
