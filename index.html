@@ -448,6 +448,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
       <div class="fl"><label>Firma adı</label><input id="rn" type="text" placeholder="Firma / marka adınız"></div>
       <div class="fl"><label>Email</label><input id="re" type="email" placeholder="email@firma.com"></div>
       <div class="fl"><label>Şifre</label><input id="rp" type="password" placeholder="Min. 6 karakter"></div>
+      <div class="fl"><label>Telefon <span style="font-weight:400;color:var(--ink3);text-transform:none;font-size:10px">— opsiyonel</span></label><input id="rtel" type="tel" placeholder="+90 5xx xxx xx xx"></div>
       <div class="fl"><label>Rolünüz</label>
         <div class="rpick">
           <button class="ropt on" id="ro-m" onclick="pickRole('marka')">Marka / Alıcı</button>
@@ -608,7 +609,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
             <div class="fl"><label>Website</label><input id="p-web" type="url" placeholder="https://"></div>
           </div>
         </div>
-        <div class="card mb" style="padding:14px">
+        <div class="card mb" id="profil-uretim-card" style="padding:14px">
           <div style="font-size:13px;font-weight:500;color:var(--ink);margin-bottom:12px">Üretim bilgileri</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
             <div class="fl"><label>Min. sipariş (adet)</label><input id="p-moq" type="number" placeholder="500"></div>
@@ -1078,8 +1079,10 @@ async function doReg(){
   try{
     const cred=await fb.createUserWithEmailAndPassword(fb.auth,email,pass);
     const hizmetTip=regRole==='uretici'?(document.getElementById('hizmet-tip')?.value||'uretici'):'marka';
+    const regTel=document.getElementById('rtel')?.value.trim()||null;
     await fb.setDoc(fb.doc(fb.db,'profiles',cred.user.uid),{
-      name,role:regRole,hizmet_tipi:hizmetTip,email,bakiye:0,createdAt:fb.serverTimestamp()
+      name,firma_adi:name,role:regRole,hizmet_tipi:hizmetTip,email,
+      telefon:regTel,bakiye:0,createdAt:fb.serverTimestamp()
     });
     await loadSession(cred.user);
   }catch(e){
@@ -1094,6 +1097,7 @@ async function doLogout(){
   ME=null;PROFILE=null;
   document.getElementById('le').value='';
   document.getElementById('lp').value='';
+  const rtelEl=document.getElementById('rtel');if(rtelEl)rtelEl.value='';
   showView('landing');
 }
 
@@ -1146,7 +1150,7 @@ function startApp(){
   document.getElementById('ni-tal').style.display=m?'':'none';
   document.getElementById('yeni-tal-btn').style.display=m?'':'none';
   document.getElementById('dash-fab').style.display=m?'flex':'none';
-  document.getElementById('ni-profil').style.display=m?'none':'';
+  document.getElementById('ni-profil').style.display='';
   document.getElementById('bakiye-chip').style.display=m?'none':'';
   document.getElementById('tal-title').textContent=m?'Üretim Taleplerim':'Açık Talepler';
   if(!m)loadBakiye();
@@ -1813,17 +1817,23 @@ async function openKonusma(kid){
   const k=kSnap.data();
   const m=PROFILE.role==='marka';
   const karsi=m?k.uretici_adi:k.marka_adi;
-  // Talep bilgisini çek - telefon ve gerçek isim için
+  // Talep ve marka profil bilgisini çek
   let talepData = null;
+  let karsiTelefon = null;
   try{
     const tSnap=await fb.getDoc(fb.doc(fb.db,'talepler',k.talep_id));
     if(tSnap.exists())talepData=tSnap.data();
+    // Üretici ise markanın profilinden telefonu çek
+    const m2=PROFILE.role==='marka';
+    if(!m2 && talepData?.tel_paylash){
+      const markaSnap=await fb.getDoc(fb.doc(fb.db,'profiles',k.marka_id));
+      if(markaSnap.exists())karsiTelefon=markaSnap.data().telefon||null;
+    }
   }catch(e){}
 
   const m2=PROFILE.role==='marka';
-  // Üretici ise gerçek marka adını göster
   const gercekAd = m2 ? k.uretici_adi : k.marka_adi;
-  const telefon = !m2 && talepData?.tel_paylash && talepData?.marka_tel ? talepData.marka_tel : null;
+  const telefon = karsiTelefon;
 
   document.getElementById('ms-header').innerHTML=`
     <div style="display:flex;align-items:center;gap:10px">
@@ -2042,7 +2052,11 @@ async function rProfil(){
   }
   const av1923=document.getElementById('profil-av');
   if(profAv)profAv.textContent=(data.firma_adi||data.name||'?').substring(0,2).toUpperCase();
-  rKatalog();
+  // Marka için üretim kartını gizle
+  const uretimCard=document.getElementById('profil-uretim-card');
+  if(uretimCard)uretimCard.style.display=PROFILE.role==='marka'?'none':'';
+  const katalogCard=uretimCard?.nextElementSibling;
+  if(PROFILE.role!=='marka'&&katalogCard)rKatalog();
 }
 
 function toggleSert(btn,s){
@@ -2058,21 +2072,26 @@ async function saveProfil(){
   const fb=getFB();
   const firma=document.getElementById('p-firma').value.trim();
   if(!firma){toast('Firma adı zorunlu');return;}
+  const m=PROFILE.role==='marka';
   try{
-    await fb.updateDoc(fb.doc(fb.db,'profiles',ME.uid),{
+    const updateData={
       firma_adi:firma,name:firma,
-      aciklama:document.getElementById('p-aciklama').value,
-      konum:document.getElementById('p-konum').value,
-      telefon:document.getElementById('p-tel').value,
-      website:document.getElementById('p-web').value,
-      moq:+document.getElementById('p-moq').value||null,
-      teslim_suresi:+document.getElementById('p-gun').value||null,
-      kapasite:document.getElementById('p-kapasite').value,
-      sertifikalar:_sertler,
-      urun_kategorileri:_katlar,
-    });
-    PROFILE.name=firma;toast('Profil kaydedildi!');
-  }catch(e){toast('Hata: '+e.message);}
+      aciklama:document.getElementById('p-aciklama').value||null,
+      konum:document.getElementById('p-konum').value||null,
+      telefon:document.getElementById('p-tel').value||null,
+      website:document.getElementById('p-web').value||null,
+    };
+    if(!m){
+      updateData.moq=+document.getElementById('p-moq').value||null;
+      updateData.teslim_suresi=+document.getElementById('p-gun').value||null;
+      updateData.kapasite=document.getElementById('p-kapasite').value||null;
+      updateData.sertifikalar=_sertler;
+      updateData.urun_kategorileri=_katlar;
+    }
+    await fb.updateDoc(fb.doc(fb.db,'profiles',ME.uid),updateData);
+    PROFILE={...PROFILE,...updateData};
+    toast('Profil kaydedildi!');
+  }catch(e){toast('Hata: '+e.message);console.error(e);}
 }
 
 // KATALOG
