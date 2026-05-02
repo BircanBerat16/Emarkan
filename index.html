@@ -668,7 +668,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
         <span style="color:var(--ink3)">Toplam teklif</span><strong id="tk-total" style="color:var(--ink)">₺0</strong>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:13px">
-        <span style="color:var(--ink3)">Platform ücreti</span><strong id="tk-fee" style="color:var(--warm2)">₺0</strong>
+        <span style="color:var(--ink3)">Platform ücreti</span><span id="tk-fee" style="color:var(--ink3);font-size:12px;font-weight:400">Teklif gönderimde belirlenir</span>
       </div>
       <div style="font-size:11px;color:var(--ink3);margin-top:6px">Ücret bakiyenizden düşülür</div>
     </div>
@@ -1294,7 +1294,7 @@ async function updTeklif(){
   if(t){
     document.getElementById('mt-sub').textContent=t.marka_adi+' · '+t.adet+' adet '+t.urun;
     document.getElementById('tk-total').textContent=fmt(f*t.adet);
-    const uc=getTeklifUcreti((+document.getElementById('tk-fiyat').value)*(t?.adet||0));document.getElementById('tk-fee').textContent=fmt(uc);
+    document.getElementById('tk-fee').textContent='Teklif gönderimde belirlenir';
     document.getElementById('tk-fee-box').style.display='';
   }
 }
