@@ -516,7 +516,11 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
         <button id="dash-fab" onclick="openNewTalep()" style="display:none;margin-top:14px;background:var(--warm);color:#fff;border:none;border-radius:24px;padding:9px 20px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">+ Yeni üretim talebi</button>
       </div>
       <div class="sgrid" style="padding-top:14px" id="sgrid"></div>
-      <div class="sp mb"><div class="sec-lbl">Son aktivite</div><div class="card" id="recent"></div></div>
+      <div id="kat-filter-wrap" style="display:none;padding:0 16px;margin-bottom:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none">
+        <button class="fpill on" id="kf-all" onclick="filterKat(null)" style="margin-right:6px">Tümü</button>
+        <span id="kf-pills"></span>
+      </div>
+      <div class="sp mb"><div class="sec-lbl" id="recent-label">Son aktivite</div><div id="recent"></div></div>
     </div>
 
     <!-- PAZAR -->
@@ -850,6 +854,51 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 <div id="toast"></div>
 
 <script>
+
+let _aktifKatFilter = null;
+let _tumTalepler = [];
+
+function filterKat(kat){
+  _aktifKatFilter = kat;
+  // Buton stillerini güncelle
+  document.getElementById('kf-all').classList.toggle('on', !kat);
+  document.querySelectorAll('.kf-pill').forEach(b=>{
+    b.classList.toggle('on', b.dataset.kat === kat);
+  });
+  // Talepleri filtrele
+  const liste = kat ? _tumTalepler.filter(t=>t.kategori===kat||t.alt_kategori===kat) : _tumTalepler;
+  renderTalepGrid(liste);
+}
+
+function renderTalepGrid(list){
+  const re = document.getElementById('recent');
+  if(!list.length){
+    re.style.cssText='';
+    re.innerHTML='<div class="empty"><div class="empty-t">Bu kategoride talep yok</div></div>';
+    return;
+  }
+  re.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:20px';
+  re.innerHTML=list.map(t=>{
+    const imgs=t.gorseller&&t.gorseller.length?t.gorseller:[];
+    const imgContent=imgs.length>0
+      ?`<img src="${imgs[0]}" style="width:100%;height:100%;object-fit:cover;transition:transform .3s;display:block" onerror="this.style.display='none'">`
+      :`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:36px">📦</div>`;
+    return`<div style="cursor:pointer" onclick="openTalep('${t.id}')">
+      <div style="position:relative;border-radius:14px;overflow:hidden;background:var(--cream3);aspect-ratio:1/1">
+        ${imgContent}
+        ${imgs.length>1?`<div style="position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:3px 8px;border-radius:20px">+${imgs.length-1} görsel</div>`:''}
+        <div style="position:absolute;top:10px;left:10px">${chip(t.status)}</div>
+      </div>
+      <div style="padding:10px 2px 4px">
+        <div style="font-weight:600;font-size:14px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.marka_adi}</div>
+        ${t.kategori?`<div style="font-size:11px;color:var(--warm2);font-weight:500;margin-top:1px">${t.kategori}${t.alt_kategori?' › '+t.alt_kategori:''}</div>`:''}
+        <div style="font-size:12px;color:var(--ink3)">${t.urun} · ${t.adet} adet</div>
+        <button onclick="event.stopPropagation();openTeklif('${t.id}')" style="width:100%;margin-top:8px;padding:9px;background:var(--teal);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">Teklif Ver</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 const KATEGORILER = {
   "Bebek (0-5 yas)": ["Tulum & Zibin","Ust Giyim","Alt Giyim","Pijama & Uyku","Dis Giyim","Aksesuar"],
   "Cocuk (5-14 yas)": ["Ust Giyim","Alt Giyim","Elbise & Etek","Dis Giyim","Okul Kiyafeti","Spor Giyim"],
@@ -1191,6 +1240,22 @@ async function rUreticiDash(){
         counts[t.id]=s.size;
       }catch(e){counts[t.id]=0;}
     }));
+    _tumTalepler = list;
+    _aktifKatFilter = null;
+
+    // Filtre şeridini oluştur
+    const filterWrap = document.getElementById('kat-filter-wrap');
+    if(filterWrap){
+      filterWrap.style.display='';
+      const kategorilerMevcut = [...new Set(list.filter(t=>t.kategori).map(t=>t.kategori))];
+      document.getElementById('kf-pills').innerHTML = kategorilerMevcut.map(k=>
+        `<button class="fpill kf-pill" data-kat="${k}" onclick="filterKat('${k}')" style="margin-right:6px">${k}</button>`
+      ).join('');
+      document.getElementById('kf-all').classList.add('on');
+    }
+
+    renderTalepGrid(list);
+    return;
     re.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:20px';
     re.innerHTML=list.map(t=>{
       const imgs=t.gorseller&&t.gorseller.length?t.gorseller:[];
