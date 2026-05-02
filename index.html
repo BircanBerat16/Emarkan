@@ -877,12 +877,14 @@ function filterKat(kat){
 
 function renderTalepGrid(list){
   const re = document.getElementById('recent');
-  if(!list.length){
+  if(!re){console.error('recent element not found');return;}
+  if(!list||!list.length){
     re.style.cssText='';
     re.innerHTML='<div class="empty"><div class="empty-t">Bu kategoride talep yok</div></div>';
     return;
   }
-  const cols=window.innerWidth<768?2:4;re.style.cssText='display:grid;grid-template-columns:repeat('+cols+',1fr);gap:'+(cols===2?'12px':'20px');
+  const cols=window.innerWidth<768?2:4;
+  re.style.cssText='display:grid;grid-template-columns:repeat('+cols+',1fr);gap:'+(cols===2?'12px':'20px');
   re.innerHTML=list.map(t=>{
     const imgs=t.gorseller&&t.gorseller.length?t.gorseller:[];
     const imgContent=imgs.length>0
@@ -1223,8 +1225,9 @@ async function rUreticiDash(){
     </div>`;
 
   const re=document.getElementById('recent');
-  const secLbl=re.previousElementSibling;
-  if(secLbl)secLbl.textContent='Açık Talepler';
+  if(!re){console.error('recent not found');return;}
+  const lbl=document.getElementById('recent-label');
+  if(lbl)lbl.textContent='Açık Talepler';
   re.className='';
   re.style.cssText='';
 
