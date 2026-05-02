@@ -876,8 +876,8 @@ function filterKat(kat){
 }
 
 function renderTalepGrid(list){
-  const re = document.getElementById('recent');
-  if(!re){console.error('recent element not found');return;}
+  const re=document.getElementById('recent');
+  if(!re)return;
   if(!list||!list.length){
     re.style.cssText='';
     re.innerHTML='<div class="empty"><div class="empty-t">Bu kategoride talep yok</div></div>';
@@ -1209,7 +1209,7 @@ async function rUreticiDash(){
     <div class="scard ${(PROFILE.bakiye||0)<TEKLIF_UCRETI?'hi':''}" onclick="om('m-bakiye')" style="cursor:pointer">
       <div class="slabel">Bakiye</div>
       <div class="sval">${fmt(PROFILE.bakiye||0)}</div>
-      <div class="ssub">${(PROFILE.bakiye||0)<85?'Bakiye yükle ↑':'Aktif'}</div>
+      <div class="ssub">${(PROFILE.bakiye||0)<TEKLIF_UCRETI?'Bakiye yükle ↑':'Aktif'}</div>
     </div>
     <div class="scard">
       <div class="slabel">Verilen teklif</div>
@@ -1224,22 +1224,22 @@ async function rUreticiDash(){
       <div class="sval">→</div>
     </div>`;
 
-  const re=document.getElementById('recent');
-  if(!re){console.error('recent not found');return;}
   const lbl=document.getElementById('recent-label');
   if(lbl)lbl.textContent='Açık Talepler';
-  re.className='';
-  re.style.cssText='';
+  const re=document.getElementById('recent');
+  re.innerHTML='<div style="padding:20px;text-align:center;color:var(--ink3)">Yükleniyor...</div>';
 
   try{
-    // Üreticinin kategorilerine göre filtrele
     const q=fb.query(fb.collection(fb.db,'talepler'),fb.where('status','in',['open','offered']),fb.orderBy('createdAt','desc'));
     const snap=await fb.getDocs(q);
     const list=snap.docs.map(d=>({id:d.id,...d.data()}));
+
     if(!list.length){
-      re.innerHTML='<div class="empty"><div class="empty-t">Henüz açık talep yok</div><div class="empty-s">Markalar talep oluşturdukça burada görünür</div></div>';
+      re.style.cssText='';
+      re.innerHTML='<div class="empty"><div class="empty-t">Henüz açık talep yok</div></div>';
       return;
     }
+
     const counts={};
     await Promise.all(list.map(async t=>{
       try{
@@ -1248,48 +1248,43 @@ async function rUreticiDash(){
         counts[t.id]=s.size;
       }catch(e){counts[t.id]=0;}
     }));
-    _tumTalepler = list;
-    _aktifKatFilter = null;
 
-    // Filtre şeridini oluştur
-    const filterWrap = document.getElementById('kat-filter-wrap');
+    _tumTalepler=list;
+
+    // Filtre şeridi
+    const filterWrap=document.getElementById('kat-filter-wrap');
     if(filterWrap){
       filterWrap.style.display='';
-      const kategorilerMevcut = [...new Set(list.filter(t=>t.kategori).map(t=>t.kategori))];
-      document.getElementById('kf-pills').innerHTML = kategorilerMevcut.map(k=>
+      const katsMevcut=[...new Set(list.filter(t=>t.kategori).map(t=>t.kategori))];
+      document.getElementById('kf-pills').innerHTML=katsMevcut.map(k=>
         `<button class="fpill kf-pill" data-kat="${k}" onclick="filterKat('${k}')" style="margin-right:6px">${k}</button>`
       ).join('');
       document.getElementById('kf-all').classList.add('on');
     }
 
-    renderTalepGrid(list);
-    return;
-    const cols=window.innerWidth<768?2:4;re.style.cssText='display:grid;grid-template-columns:repeat('+cols+',1fr);gap:'+(cols===2?'12px':'20px');
+    // Grid
+    const cols=window.innerWidth<768?2:4;
+    re.style.cssText='display:grid;grid-template-columns:repeat('+cols+',1fr);gap:'+(cols===2?'12px':'20px');
     re.innerHTML=list.map(t=>{
       const imgs=t.gorseller&&t.gorseller.length?t.gorseller:[];
-      const imgContent=imgs.length>0
-        ?`<img src="${imgs[0]}" style="width:100%;height:100%;object-fit:cover;transition:transform .3s;display:block" onerror="this.style.display='none'">`
-        :`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:36px">📦</div>`;
+      const img=imgs.length>0?`<img src="${imgs[0]}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none'">`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:36px">📦</div>`;
       return`<div style="cursor:pointer" onclick="openTalep('${t.id}')">
         <div style="position:relative;border-radius:14px;overflow:hidden;background:var(--cream3);aspect-ratio:1/1">
-          ${imgContent}
-          ${imgs.length>1?`<div style="position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:3px 8px;border-radius:20px">+${imgs.length-1} görsel</div>`:''}
+          ${img}
           <div style="position:absolute;top:10px;left:10px">${chip(t.status)}</div>
         </div>
         <div style="padding:10px 2px 4px">
-          <div style="font-weight:600;font-size:14px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.marka_adi}</div>
-          <div style="font-size:13px;color:var(--ink3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.urun}</div>
-          ${t.kategori?`<div style="font-size:11px;color:var(--warm2);font-weight:500;margin-top:2px">${t.kategori}${t.alt_kategori?' › '+t.alt_kategori:''}</div>`:''}
-          <div style="font-size:12px;color:var(--ink3)">${t.adet} adet${t.tarih?' · '+t.tarih:''}</div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
-            <div class="tklf-cnt" style="margin:0"><div class="tklf-dot"></div>${counts[t.id]||0} teklif</div>
-            ${t.butce?`<div style="font-size:12px;font-weight:600;color:var(--ink)">${fmt(t.butce)}<span style="font-size:10px;font-weight:400;color:var(--ink3)">/ad</span></div>`:''}
-          </div>
+          <div style="font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.marka_adi}</div>
+          ${t.kategori?`<div style="font-size:11px;color:var(--warm2);font-weight:500">${t.kategori}${t.alt_kategori?' › '+t.alt_kategori:''}</div>`:''}
+          <div style="font-size:12px;color:var(--ink3)">${t.urun} · ${t.adet} adet</div>
           <button onclick="event.stopPropagation();openTeklif('${t.id}')" style="width:100%;margin-top:8px;padding:9px;background:var(--teal);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">Teklif Ver</button>
         </div>
       </div>`;
     }).join('');
-  }catch(e){console.error(e);re.innerHTML='<div class="empty"><div class="empty-s">Yüklenemedi: '+e.message+'</div></div>';}
+  }catch(e){
+    console.error('rUreticiDash error:',e);
+    document.getElementById('recent').innerHTML='<div class="empty"><div class="empty-s">Hata: '+e.message+'</div></div>';
+  }
 }
 
 async function rDash(){
