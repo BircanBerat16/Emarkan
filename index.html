@@ -249,6 +249,25 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 .dh-d1{position:absolute;right:-20px;top:-20px;width:160px;height:160px;border-radius:50%;background:rgba(196,149,106,.1)}
 .dh-d2{position:absolute;right:50px;bottom:-40px;width:100px;height:100px;border-radius:50%;background:rgba(45,106,90,.12)}
 
+
+/* AIRBNB STYLE PRODUCER CARDS */
+.plist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding:0}
+.pcard{background:var(--white);border:none;border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;margin-bottom:0;box-shadow:none}
+.pcard:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,23,20,.1)}
+.pcard:active{transform:translateY(0)}
+.pbanner{height:200px;display:flex;align-items:flex-end;justify-content:flex-start;padding:14px;font-family:'Playfair Display',serif;font-size:28px;font-weight:600;position:relative;border-radius:14px;overflow:hidden}
+.pbanner-badge{position:absolute;top:12px;left:12px;background:var(--white);border-radius:20px;padding:4px 10px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;color:var(--ink)}
+.pbanner-rating{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.5);border-radius:20px;padding:4px 10px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--white);display:flex;align-items:center;gap:3px}
+.pbody{padding:12px 4px 4px}
+.pbody-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px}
+.pbody-name{font-weight:600;font-size:14px;color:var(--ink)}
+.pbody-rating{font-size:13px;font-weight:500;color:var(--ink);display:flex;align-items:center;gap:3px}
+.pbody-loc{font-size:13px;color:var(--ink3);margin-bottom:6px}
+.pbody-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.pbody-tag{font-size:11px;padding:3px 8px;border-radius:20px;background:var(--cream3);color:var(--ink2)}
+.pbody-info{font-size:13px;color:var(--ink3)}
+.pbody-info strong{color:var(--ink);font-weight:500}
+
 @media(min-width:768px){
   #v-auth{padding:40px 24px}
   #app-content{display:flex;justify-content:center}
@@ -422,7 +441,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
         <button class="fpill" id="f-ist" onclick="tf('ist')">İstanbul</button>
         <button class="fpill" id="f-bur" onclick="tf('bur')">Bursa</button>
       </div>
-      <div style="padding:10px 16px 0"><div class="plist-grid" id="plist"></div></div>
+      <div style="padding:10px 16px 16px"><div class="plist-grid" id="plist"></div></div>
     </div>
 
     <!-- TALEPLER -->
@@ -537,8 +556,14 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
       <div class="fl"><label>Adet</label><input id="nt-adet" type="number" placeholder="500" min="1"></div>
       <div class="fl"><label>Teslim tarihi</label><input id="nt-tarih" type="date"></div>
     </div>
-    <div class="fl"><label>Bütçe (birim ₺)</label><input id="nt-butce" type="number" placeholder="örn. 150"></div>
+    <div class="fl"><label>Bütçe (birim ₺) <span style="font-weight:400;color:var(--ink3);text-transform:none;font-size:10px">— opsiyonel</span></label><input id="nt-butce" type="number" placeholder="örn. 150"></div>
     <div class="fl"><label>Notlar</label><textarea id="nt-not" placeholder="Kumaş türü, beden aralığı, renk..."></textarea></div>
+    <div class="fl">
+      <label>Görseller (opsiyonel, max 3)</label>
+      <input id="nt-img1" type="url" placeholder="Görsel 1 URL" style="margin-bottom:6px">
+      <input id="nt-img2" type="url" placeholder="Görsel 2 URL" style="margin-bottom:6px">
+      <input id="nt-img3" type="url" placeholder="Görsel 3 URL">
+    </div>
     <button class="btn btn-teal" id="yeni-submit-btn" onclick="subTalep()">Talebi Yayınla</button>
     <button class="btn btn-ghost" style="margin-top:8px" onclick="cm('m-yeni')">İptal</button>
   </div>
@@ -739,16 +764,21 @@ async function loadSession(user){
 async function bootApp(){
   // Wait for Firebase module to load
   let tries=0;
-  while(!window._fb&&tries<20){await new Promise(r=>setTimeout(r,200));tries++;}
+  while(!window._fb&&tries<30){await new Promise(r=>setTimeout(r,200));tries++;}
   if(!window._fb){showView('landing');return;}
   const fb=getFB();
+  // onAuthStateChanged handles both logged-in and logged-out states
+  // First call is always the correct initial state
+  let resolved=false;
   fb.onAuthStateChanged(fb.auth,async user=>{
-    if(user&&!ME){await loadSession(user);}
-    else if(!user){showView('landing');}
+    if(!resolved){
+      resolved=true;
+      if(user){await loadSession(user);}
+      else{showView('landing');}
+    } else {
+      if(!user){ME=null;PROFILE=null;showView('landing');}
+    }
   });
-  // Check current session
-  const user=fb.auth.currentUser;
-  if(!user){showView('landing');}
 }
 
 // APP START
@@ -835,15 +865,19 @@ function rProducers(){
   if(!list.length){el.innerHTML='<div class="empty"><div class="empty-t">Sonuç bulunamadı</div></div>';return;}
   el.innerHTML=list.map(p=>`
     <div class="pcard" onclick="openProducer('${p.id}')">
-      <div class="pbanner" style="background:${p.bg};color:${p.tc}">${p.av}</div>
+      <div class="pbanner" style="background:linear-gradient(145deg,${p.bg},${p.bg}dd)">
+        <div class="pbanner-badge">${p.av}</div>
+        <div class="pbanner-rating">★ ${p.rating}</div>
+        <div style="font-family:'Playfair Display',serif;font-size:32px;font-weight:600;color:${p.tc};opacity:.3;position:absolute;bottom:10px;right:14px;line-height:1">${p.av}</div>
+      </div>
       <div class="pbody">
-        <div style="font-weight:500;font-size:14px;color:var(--ink);margin-bottom:2px">${p.name}</div>
-        <div style="font-size:12px;color:var(--ink3);margin-bottom:8px">${p.loc} · ${p.cert.join(', ')}</div>
-        <div class="ptags">${p.tags.map(t=>`<span class="ptag">${t}</span>`).join('')}</div>
-        <div style="display:flex;justify-content:space-between;font-size:12px">
-          <span style="color:var(--ink3)">Min. ${p.moq} adet</span>
-          <span style="color:var(--warm2)">${p.rating} ★</span>
+        <div class="pbody-top">
+          <div class="pbody-name">${p.name}</div>
+          <div class="pbody-rating">★ ${p.rating} <span style="color:var(--ink3);font-weight:400">(${p.rv})</span></div>
         </div>
+        <div class="pbody-loc">${p.loc} · ${p.cert.join(', ')}</div>
+        <div class="pbody-tags">${p.tags.map(t=>`<span class="pbody-tag">${t}</span>`).join('')}</div>
+        <div class="pbody-info">Min. <strong>${p.moq} adet</strong> · <strong>${p.days} gün</strong> teslim</div>
       </div>
     </div>`).join('');
 }
@@ -909,7 +943,7 @@ async function rDash(){
 
 // YENİ TALEP
 function openNewTalep(){
-  ['nt-urun','nt-adet','nt-tarih','nt-butce','nt-not'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['nt-urun','nt-adet','nt-tarih','nt-butce','nt-not','nt-img1','nt-img2','nt-img3'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   om('m-yeni');
 }
 async function subTalep(){
@@ -920,11 +954,17 @@ async function subTalep(){
   const btn=document.getElementById('yeni-submit-btn');
   btn.disabled=true;btn.textContent='Yayınlanıyor...';
   try{
+    const gorseller=[
+      document.getElementById('nt-img1').value,
+      document.getElementById('nt-img2').value,
+      document.getElementById('nt-img3').value,
+    ].filter(Boolean);
     await fb.addDoc(fb.collection(fb.db,'talepler'),{
       user_id:ME.uid,marka_adi:PROFILE.name,urun,adet,
       tarih:document.getElementById('nt-tarih').value||null,
-      butce:+document.getElementById('nt-butce').value||0,
+      butce:+document.getElementById('nt-butce').value||null,
       notlar:document.getElementById('nt-not').value,
+      gorseller,
       status:'open',createdAt:fb.serverTimestamp()
     });
     cm('m-yeni');toast('Talep yayınlandı!');rDash();
