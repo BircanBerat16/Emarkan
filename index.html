@@ -580,14 +580,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
             </div>
           </div>
           <div class="fl"><label>Ürün kategorileri</label>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-              <button class="sert-btn" onclick="toggleKat(this,'Pamuk')">Pamuk</button>
-              <button class="sert-btn" onclick="toggleKat(this,'Keten')">Keten</button>
-              <button class="sert-btn" onclick="toggleKat(this,'İpek')">İpek</button>
-              <button class="sert-btn" onclick="toggleKat(this,'Denim')">Denim</button>
-              <button class="sert-btn" onclick="toggleKat(this,'Nakış')">Nakış</button>
-              <button class="sert-btn" onclick="toggleKat(this,'Viskon')">Viskon</button>
-              <button class="sert-btn" onclick="toggleKat(this,'Organik')">Organik</button>
+            <div id="profil-kat-wrap" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+              <!-- Dinamik olarak doldurulacak -->
             </div>
           </div>
         </div>
@@ -652,7 +646,17 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
   <div class="modal">
     <div class="mh">Üretim Talebi Oluştur</div>
     <div class="ms">Tüm kayıtlı üreticiler görür ve teklif verebilir</div>
-    <div class="fl"><label>Ürün türü</label><input id="nt-urun" type="text" placeholder="örn. Organik pamuk tişört"></div>
+    <div class="fl">
+      <label>Kategori</label>
+      <select id="nt-kategori" onchange="buildKategoriSelect('nt-kategori','nt-altkategori');this.dispatchEvent(new Event('change'))">
+        <option value="">Kategori seçin</option>
+      </select>
+    </div>
+    <div class="fl" id="nt-altkategori-wrap" style="display:none">
+      <label>Alt kategori</label>
+      <select id="nt-altkategori"></select>
+    </div>
+    <div class="fl"><label>Ürün açıklaması</label><input id="nt-urun" type="text" placeholder="örn. Organik pamuk tişört"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="fl"><label>Adet</label><input id="nt-adet" type="number" placeholder="500" min="1"></div>
       <div class="fl"><label>Teslim tarihi</label><input id="nt-tarih" type="date"></div>
@@ -1143,6 +1147,7 @@ async function rUreticiDash(){
   re.style.cssText='';
 
   try{
+    // Üreticinin kategorilerine göre filtrele
     const q=fb.query(fb.collection(fb.db,'talepler'),fb.where('status','in',['open','offered']),fb.orderBy('createdAt','desc'));
     const snap=await fb.getDocs(q);
     const list=snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -1173,6 +1178,7 @@ async function rUreticiDash(){
         <div style="padding:10px 2px 4px">
           <div style="font-weight:600;font-size:14px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.marka_adi}</div>
           <div style="font-size:13px;color:var(--ink3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.urun}</div>
+          ${t.kategori?`<div style="font-size:11px;color:var(--warm2);font-weight:500;margin-top:2px">${t.kategori}${t.alt_kategori?' › '+t.alt_kategori:''}</div>`:''}
           <div style="font-size:12px;color:var(--ink3)">${t.adet} adet${t.tarih?' · '+t.tarih:''}</div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
             <div class="tklf-cnt" style="margin:0"><div class="tklf-dot"></div>${counts[t.id]||0} teklif</div>
@@ -1245,13 +1251,18 @@ async function rDash(){
 // YENİ TALEP
 function openNewTalep(){
   ['nt-urun','nt-adet','nt-tarih','nt-butce','nt-not'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); initTalepUpload();
+  buildKategoriSelect('nt-kategori','nt-altkategori');
+  const wrap=document.getElementById('nt-altkategori-wrap');if(wrap)wrap.style.display='none';
+  document.getElementById('nt-kategori').onchange=function(){const wrap=document.getElementById('nt-altkategori-wrap');if(wrap)wrap.style.display=this.value?'':'none'; buildKategoriSelect('nt-kategori','nt-altkategori'); this.dispatchEvent(new Event('change'));};
   om('m-yeni');
 }
 async function subTalep(){
   const fb=getFB();
   const urun=document.getElementById('nt-urun').value.trim();
   const adet=+document.getElementById('nt-adet').value;
+  const kategori=document.getElementById('nt-kategori').value;
   if(!urun||!adet){toast('Ürün türü ve adet zorunlu');return;}
+  if(!kategori){toast('Lütfen kategori seçin');return;}
   if(window._talepGorseller.length===0){toast('En az 1 görsel eklemelisiniz');return;}
   const btn=document.getElementById('yeni-submit-btn');
   btn.disabled=true;btn.textContent='Yayınlanıyor...';
@@ -1259,6 +1270,8 @@ async function subTalep(){
     const gorseller=[...window._talepGorseller];
     await fb.addDoc(fb.collection(fb.db,'talepler'),{
       user_id:ME.uid,marka_adi:PROFILE.name,urun,adet,
+      kategori:document.getElementById('nt-kategori').value||null,
+      alt_kategori:document.getElementById('nt-altkategori').value||null,
       tarih:document.getElementById('nt-tarih').value||null,
       butce:+document.getElementById('nt-butce').value||null,
       notlar:document.getElementById('nt-not').value,
@@ -1738,8 +1751,18 @@ async function rProfil(){
   _sertler=data.sertifikalar||[];
   _katlar=data.urun_kategorileri||[];
   document.querySelectorAll('.sert-btn').forEach(b=>{
-    b.classList.toggle('on',_sertler.includes(b.textContent)||_katlar.includes(b.textContent));
+    b.classList.toggle('on',_sertler.includes(b.textContent));
   });
+  // Kategori butonlarını dinamik oluştur
+  const katWrap=document.getElementById('profil-kat-wrap');
+  if(katWrap){
+    const tumKatlar=Object.keys(KATEGORILER).flatMap(k=>KATEGORILER[k].map(a=>k+' › '+a));
+    katWrap.innerHTML=Object.keys(KATEGORILER).map(k=>
+      `<div style="width:100%;margin-top:8px"><div style="font-size:11px;color:var(--ink3);margin-bottom:4px;font-weight:500">${k}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${
+        KATEGORILER[k].map(a=>`<button class="sert-btn ${_katlar.includes(k+' › '+a)?'on':''}" onclick="toggleKat(this,'${k} › ${a}')">${a}</button>`).join('')
+      }</div></div>`
+    ).join('');
+  }
   const av=document.getElementById('profil-av');
   if(av)av.textContent=(data.firma_adi||data.name||'?').substring(0,2).toUpperCase();
   rKatalog();
