@@ -1993,38 +1993,34 @@ async function doBakiyeYukle(){
 // PROFİL
 async function rProfil(){
   const fb=getFB();
-  // Önce tüm alanları sıfırla
+  // Tüm alanları sıfırla
   ['p-firma','p-aciklama','p-konum','p-tel','p-web','p-moq','p-gun','p-kapasite'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.value='';
   });
   _sertler=[];_katlar=[];
   document.querySelectorAll('.sert-btn').forEach(b=>b.classList.remove('on'));
   // Kapak ve logo sıfırla
-  const ki=document.getElementById('profil-kapak-img');
-  const kp=document.getElementById('profil-kapak-ph');
-  if(ki){ki.src='';ki.style.display='none';}
-  if(kp)kp.style.display='flex';
-  const li=document.getElementById('profil-logo-img');
-  const av1878=document.getElementById('profil-av');
-  if(li){li.src='';li.style.display='none';}
-  if(av){av.style.display='';av.textContent=(PROFILE.name||'?').substring(0,2).toUpperCase();}
-
+  const kapakImg=document.getElementById('profil-kapak-img');
+  const kapakPh=document.getElementById('profil-kapak-ph');
+  const logoImg=document.getElementById('profil-logo-img');
+  const profilAv=document.getElementById('profil-av');
+  if(kapakImg){kapakImg.src='';kapakImg.style.display='none';}
+  if(kapakPh)kapakPh.style.display='flex';
+  if(logoImg){logoImg.src='';logoImg.style.display='none';}
+  if(profilAv){profilAv.style.display='';profilAv.textContent=(PROFILE.name||'?').substring(0,2).toUpperCase();}
+  // Firestore'dan yükle
   const snap=await fb.getDoc(fb.doc(fb.db,'profiles',ME.uid));
   const data=snap.exists()?snap.data():{};
   PROFILE={...PROFILE,...data};
   const set=(id,val)=>{const el=document.getElementById(id);if(el&&val!=null)el.value=val;};
-  // Kapak ve logo
+  // Kapak ve logo göster
   if(data.kapak_url){
-    const ki=document.getElementById('profil-kapak-img');
-    const kp=document.getElementById('profil-kapak-ph');
-    if(ki){ki.src=data.kapak_url;ki.style.display='block';}
-    if(kp)kp.style.display='none';
+    if(kapakImg){kapakImg.src=data.kapak_url;kapakImg.style.display='block';}
+    if(kapakPh)kapakPh.style.display='none';
   }
   if(data.logo_url){
-    const li=document.getElementById('profil-logo-img');
-    const av1896=document.getElementById('profil-av');
-    if(li){li.src=data.logo_url;li.style.display='block';}
-    if(av)av.style.display='none';
+    if(logoImg){logoImg.src=data.logo_url;logoImg.style.display='block';}
+    if(profilAv)profilAv.style.display='none';
   }
   set('p-firma',data.firma_adi||data.name);
   set('p-aciklama',data.aciklama);
@@ -2039,25 +2035,21 @@ async function rProfil(){
   document.querySelectorAll('.sert-btn').forEach(b=>{
     b.classList.toggle('on',_sertler.includes(b.textContent));
   });
+  if(profilAv&&!data.logo_url)profilAv.textContent=(data.firma_adi||data.name||'?').substring(0,2).toUpperCase();
   // Kategori butonlarını dinamik oluştur
   const katWrap=document.getElementById('profil-kat-wrap');
   if(katWrap){
-    const tumKatlar=Object.keys(KATEGORILER).flatMap(k=>KATEGORILER[k].map(a=>k+' › '+a));
     katWrap.innerHTML=Object.keys(KATEGORILER).map(k=>
       `<div style="width:100%;margin-top:8px"><div style="font-size:11px;color:var(--ink3);margin-bottom:4px;font-weight:500">${k}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${
-        KATEGORILER[k].map(a=>`<button class="sert-btn ${_katlar.includes(k+' › '+a)?'on':''}" onclick="toggleKat(this,'${k} › ${a}')">${a}</button>`).join('')
+        KATEGORILER[k].map(a=>`<button class="sert-btn ${_katlar.includes(k+' > '+a)?'on':''}" onclick="toggleKat(this,'${k} > ${a}')">${a}</button>`).join('')
       }</div></div>`
     ).join('');
   }
-  const av1923=document.getElementById('profil-av');
-  if(profAv)profAv.textContent=(data.firma_adi||data.name||'?').substring(0,2).toUpperCase();
   // Marka için üretim kartını gizle
   const uretimCard=document.getElementById('profil-uretim-card');
   if(uretimCard)uretimCard.style.display=PROFILE.role==='marka'?'none':'';
-  const katalogCard=uretimCard?.nextElementSibling;
-  if(PROFILE.role!=='marka'&&katalogCard)rKatalog();
+  if(PROFILE.role!=='marka')rKatalog();
 }
-
 function toggleSert(btn,s){
   if(_sertler.includes(s)){_sertler=_sertler.filter(x=>x!==s);btn.classList.remove('on');}
   else{_sertler.push(s);btn.classList.add('on');}
@@ -2138,8 +2130,8 @@ async function uploadLogo(input){
     const url=await uploadToCloudinary(file);
     const img=document.getElementById('profil-logo-img');
     img.src=url;img.style.display='block';
-    const av2001=document.getElementById('profil-av');
-    if(av)av.style.display='none';
+    const logoAv=document.getElementById('profil-av');
+    if(logoAv)logoAv.style.display='none';
     const fb=getFB();
     await fb.updateDoc(fb.doc(fb.db,'profiles',ME.uid),{logo_url:url});
     PROFILE.logo_url=url;
@@ -2233,8 +2225,8 @@ async function uploadToCloudinary(file){
   throw new Error('Yükleme başarısız');
 }
 
-window.window._talepGorseller = [];
-window.window._katalogGorsel = null;
+window._talepGorseller = [];
+window._katalogGorsel = null;
 
 function initTalepUpload(){
   window._talepGorseller = [];
