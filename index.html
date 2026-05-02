@@ -147,6 +147,22 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 /* APP */
 #v-app{flex-direction:column;height:100dvh;overflow:hidden}
 #topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 16px;height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:var(--shadow)}
+@media(min-width:768px){
+  #v-app{flex-direction:column}
+  #app-body{display:flex;flex:1;overflow:hidden}
+  #sidebar{width:220px;flex-shrink:0;background:var(--white);border-right:1px solid var(--border);padding:16px 12px;display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+  #app-content{flex:1;overflow-y:auto;padding-bottom:0}
+  #bnav{display:none}
+  .si{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;border:none;background:transparent;font-family:inherit;color:var(--ink3);font-size:14px;width:100%;text-align:left;transition:all .15s;position:relative}
+  .si:hover{background:var(--cream2);color:var(--ink)}
+  .si.on{background:var(--cream2);color:var(--ink);font-weight:500}
+  .si svg{width:18px;height:18px;stroke-width:1.5;fill:none;stroke:currentColor;flex-shrink:0}
+  .si-badge{background:var(--warm);color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;padding:0 4px;display:none;align-items:center;justify-content:center;margin-left:auto}
+  .si-badge.on{display:flex}
+  .sidebar-logo{font-family:'Playfair Display',serif;font-size:18px;font-weight:600;color:var(--ink);padding:8px 12px 16px;cursor:pointer;border-bottom:1px solid var(--border);margin-bottom:8px}
+  .sidebar-logo span{color:var(--warm2)}
+  .sidebar-bottom{margin-top:auto;padding-top:16px;border-top:1px solid var(--border)}
+}
 .logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;letter-spacing:-.5px;color:var(--ink);cursor:pointer}
 .logo span{color:var(--warm2)}
 .tbr{display:flex;align-items:center;gap:8px}
@@ -439,6 +455,37 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
       <button class="logout-btn" onclick="doLogout()">Çıkış</button>
     </div>
   </div>
+  <div id="app-body">
+  <div id="sidebar" style="display:none">
+    <div class="sidebar-logo" onclick="showView('landing')">emarkan<span>.</span></div>
+    <button class="si on" id="si-dash" onclick="gp('dash')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      Genel
+    </button>
+    <button class="si" id="si-pazar" onclick="gp('pazar')">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+      Pazar
+    </button>
+    <button class="si" id="si-tal" onclick="gp('tal')">
+      <svg viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414A1 1 0 0 1 19 9.414V19a2 2 0 0 1-2 2z"/></svg>
+      Talepler<div class="si-badge" id="sb-tal"></div>
+    </button>
+    <button class="si" id="si-msg" onclick="gp('msg')">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Mesajlar<div class="si-badge" id="sb-msg"></div>
+    </button>
+    <button class="si" id="si-profil" onclick="gp('profil')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Profil
+    </button>
+    <div class="sidebar-bottom">
+      <div style="font-size:12px;color:var(--ink3);padding:0 12px;margin-bottom:8px" id="sb-user"></div>
+      <button onclick="doLogout()" class="si" style="color:var(--red)">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/></svg>
+        Çıkış
+      </button>
+    </div>
+  </div>
   <div id="app-content">
 
     <!-- DASHBOARD -->
@@ -536,6 +583,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
       </div>
     </div>
 
+  </div>
   </div>
   <div id="bnav">
     <button class="ni on" id="ni-dash" onclick="gp('dash')">
@@ -848,8 +896,10 @@ function startApp(){
 function gp(id){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  document.querySelectorAll('.si').forEach(n=>n.classList.remove('on'));
   document.getElementById('pg-'+id).classList.add('on');
   const ni=document.getElementById('ni-'+id);if(ni)ni.classList.add('on');
+  const si=document.getElementById('si-'+id);if(si)si.classList.add('on');
   if(id==='dash')rDash();
   if(id==='tal')rTalepler();
   if(id==='msg')rMesajlar();
@@ -1063,6 +1113,19 @@ async function rDash(){
   const tb=m?talepler.filter(t=>t.status==='offered').length:talepler.filter(t=>t.status==='open').length;
   const nb=document.getElementById('nb-tal');
   nb.textContent=tb||'';nb.classList.toggle('on',tb>0);
+  // Mesaj badge güncelle
+  if(m){
+    try{
+      const fb=getFB();
+      const mq=fb.query(fb.collection(fb.db,'konusmalar'),fb.where('marka_id','==',ME.uid));
+      const msnap=await fb.getDocs(mq);
+      const totalUnread=msnap.docs.reduce((a,d)=>a+(d.data().okunmadi_marka||0),0);
+      const nmsg=document.getElementById('nb-msg');
+      if(nmsg){nmsg.textContent=totalUnread||'';nmsg.classList.toggle('on',totalUnread>0);}
+      const smsg=document.getElementById('sb-msg');
+      if(smsg){smsg.textContent=totalUnread||'';smsg.classList.toggle('on',totalUnread>0);}
+    }catch(e){}
+  }
 }
 
 // YENİ TALEP
@@ -1322,7 +1385,7 @@ async function baslatKonusma(talepId, tkData){
         gonderen_id:ME.uid,
         gonderen_adi:PROFILE.name,
         tip:'teklif',
-        icerik:'Teklif: '+fmt(tkData.fiyat)+' /adet, '+tkData.gun+' gun teslim'+(tkData.notlar?' - '+tkData.notlar:''),
+        icerik:'💼 Teklif: '+fmt(tkData.fiyat)+'/adet · '+tkData.gun+' gün teslim'+(tkData.notlar?'\n\nNot: '+tkData.notlar:''),
         createdAt:fb.serverTimestamp()
       });
     } else {
@@ -1403,7 +1466,7 @@ async function loadMesajlar(kid){
       const isTeklif=msg.tip==='teklif';
       return`<div style="display:flex;flex-direction:column;align-items:${benimMi?'flex-end':'flex-start'};gap:2px">
         ${!benimMi?`<div style="font-size:11px;color:var(--ink3);padding:0 4px">${msg.gonderen_adi}</div>`:''}
-        <div style="max-width:78%;padding:10px 14px;border-radius:${benimMi?'18px 18px 4px 18px':'18px 18px 18px 4px'};font-size:14px;line-height:1.5;white-space:pre-wrap;${benimMi?'background:var(--teal);color:#fff':'background:var(--white);border:1px solid var(--border);color:var(--ink)'}${isTeklif?';font-weight:500':''}">${msg.icerik}</div>
+        <div style="max-width:78%;padding:10px 14px;border-radius:${benimMi?'18px 18px 4px 18px':'18px 18px 18px 4px'};font-size:14px;line-height:1.5;white-space:pre-wrap;${benimMi?'background:var(--teal);color:#fff':`background:${isTeklif?'var(--warm-l)':'var(--white)'};border:1px solid ${isTeklif?'var(--warm)':'var(--border)'};color:var(--ink)`}">${msg.icerik}</div>
       </div>`;
     }).join('');
     el.scrollTop=el.scrollHeight;
