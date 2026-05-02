@@ -1334,9 +1334,11 @@ async function doPayment(){
       createdAt:fb.serverTimestamp()
     });
     await fb.updateDoc(fb.doc(fb.db,'talepler',curTalepId),{status:'offered'});
+    // Konuşma başlat
+    await baslatKonusma(curTalepId, _tkData);
     cm('m-odeme');
-    toast('Teklif gönderildi! Bakiyenizden '+fmt(TEKLIF_UCRETI)+' düşüldü.');
-    rDash();rTalepler();openTalep(curTalepId);
+    toast('Teklif gönderildi! Mesajlar kısmından takip edebilirsiniz.');
+    rDash();
   }catch(e){toast('Hata: '+e.message);}
   btn.disabled=false;btn.textContent='Onayla · Teklifi Gönder';
 }
