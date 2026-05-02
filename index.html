@@ -1020,36 +1020,24 @@ async function rTalepler(){
   }));
   el.innerHTML=list.map(t=>{
     const imgs=t.gorseller&&t.gorseller.length?t.gorseller:[];
-    const hasImg=imgs.length>0;
-    return hasImg ? `
-    <div class="talep-card" onclick="openTalep('${t.id}')">
+    const imgContent=imgs.length>0
+      ?`<img src="${imgs[0]}" class="talep-main-img" onerror="this.style.display='none'">`
+      :`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:28px">📦</div>`;
+    return `<div class="talep-card" onclick="openTalep('${t.id}')">
       <div class="talep-img-wrap">
-        <img src="${imgs[0]}" class="talep-main-img" onerror="this.parentElement.style.background='var(--cream3)'">
-        ${imgs.length>1?`<div class="talep-img-count">+${imgs.length} görsel</div>`:''}
+        ${imgContent}
+        ${imgs.length>1?`<div class="talep-img-count">+${imgs.length-1} görsel</div>`:''}
         <div class="talep-chip-overlay">${chip(t.status)}</div>
       </div>
-      <div style="padding:10px 4px 4px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:4px">
-          <div style="min-width:0;flex:1">
-            <div style="font-weight:600;font-size:13px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m?t.urun:t.marka_adi}</div>
-            <div style="font-size:12px;color:var(--ink3);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m?t.marka_adi:t.urun}</div>
-            <div style="font-size:12px;color:var(--ink3)">${t.adet} adet${t.tarih?' · '+fmtD(t.tarih):''}</div>
-          </div>
-          <div style="flex-shrink:0;text-align:right">
-            ${t.butce?`<div style="font-size:13px;font-weight:600;color:var(--ink)">${fmt(t.butce)}<span style="font-size:10px;font-weight:400;color:var(--ink3)">/ad</span></div>`:''}
-            <div class="tklf-cnt" style="margin:2px 0 0;justify-content:flex-end"><div class="tklf-dot"></div>${counts[t.id]||0} teklif</div>
-          </div>
+      <div style="padding:10px 2px 4px">
+        <div style="font-weight:600;font-size:13px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m?t.urun:t.marka_adi}</div>
+        <div style="font-size:12px;color:var(--ink3);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m?t.marka_adi:t.urun}</div>
+        <div style="font-size:12px;color:var(--ink3)">${t.adet} adet${t.tarih?' · '+fmtD(t.tarih):''}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+          <div class="tklf-cnt" style="margin:0"><div class="tklf-dot"></div>${counts[t.id]||0} teklif</div>
+          ${t.butce?`<div style="font-size:12px;font-weight:600;color:var(--ink)">${fmt(t.butce)}<span style="font-size:10px;font-weight:400;color:var(--ink3)">/ad</span></div>`:''}
         </div>
       </div>
-    </div>` : `
-    <div class="ci" onclick="openTalep('${t.id}')">
-      <div class="av">${(t.marka_adi||'?').substring(0,2)}</div>
-      <div class="im">
-        <div class="in">${m?t.urun:t.marka_adi}</div>
-        <div class="id2">${t.adet} adet${t.butce?' · '+fmt(t.butce)+'/adet':''}</div>
-        <div class="tklf-cnt"><div class="tklf-dot"></div>${counts[t.id]||0} teklif</div>
-      </div>
-      <div class="ir">${chip(t.status)}</div>
     </div>`;
   }).join('');
 }
