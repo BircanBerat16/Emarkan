@@ -841,8 +841,7 @@ function startApp(){
   document.getElementById('bakiye-chip').style.display=m?'none':'';
   document.getElementById('tal-title').textContent=m?'Üretim Taleplerim':'Açık Talepler';
   if(!m)loadBakiye();
-  gp('dash');
-  if(m)rProducers();
+  if(m){gp('dash');rProducers();}else{gp('tal');}
 }
 
 function gp(id){
