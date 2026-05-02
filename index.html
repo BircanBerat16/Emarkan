@@ -281,13 +281,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 #tal-list{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:0}
 .talep-card{background:transparent;border:none;border-radius:0;cursor:pointer;transition:all .18s}
 .talep-card:hover .talep-img-wrap img{transform:scale(1.04)}
-.talep-img-wrap{position:relative;border-radius:14px;overflow:hidden;background:var(--cream3);aspect-ratio:4/3}
+.talep-img-wrap{position:relative;border-radius:14px;overflow:hidden;background:var(--cream3);aspect-ratio:1/1}
 .talep-main-img{width:100%;height:100%;object-fit:cover;transition:transform .3s;display:block}
 .talep-chip-overlay{position:absolute;top:10px;left:10px}
 .talep-img-count{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:3px 8px;border-radius:20px}
 
 
-@media(max-width:768px){#tal-list{grid-template-columns:repeat(2,1fr);gap:10px}}
+@media(max-width:640px){#tal-list{grid-template-columns:repeat(2,1fr);gap:10px}}
 
 /* AIRBNB STYLE PRODUCER CARDS */
 .plist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding:0}
@@ -309,8 +309,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 
 @media(min-width:768px){
   #v-auth{padding:40px 24px}
-  #app-content{display:flex;justify-content:center}
+  #v-app{flex-direction:row!important}
+  #topbar{display:none!important}
+  #app-body{display:flex!important;flex:1;overflow:hidden;flex-direction:row}
+  #sidebar{display:flex!important;width:220px;flex-shrink:0}
+  #app-content{flex:1;overflow-y:auto;padding-bottom:0!important;display:flex;justify-content:center}
   #app-content>.pg.on{width:100%;max-width:680px;padding-bottom:32px}
+  #bnav{display:none!important}
   .sgrid{grid-template-columns:repeat(4,1fr)}
   .sp{padding:0}.ph{padding:20px 0 14px}.sbar{padding:10px 0}
   .fstrip{padding:8px 0 2px}.card{margin:0}
@@ -469,7 +474,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
     </div>
   </div>
   <div id="app-body">
-  <div id="sidebar" style="display:none">
+  <div id="sidebar">
     <div class="sidebar-logo" onclick="showView('landing')">emarkan<span>.</span></div>
     <button class="si on" id="si-dash" onclick="gp('dash')">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
@@ -1160,7 +1165,7 @@ async function rUreticiDash(){
         ?`<img src="${imgs[0]}" style="width:100%;height:100%;object-fit:cover;transition:transform .3s;display:block" onerror="this.style.display='none'">`
         :`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:36px">📦</div>`;
       return`<div style="cursor:pointer" onclick="openTalep('${t.id}')">
-        <div style="position:relative;border-radius:14px;overflow:hidden;background:var(--cream3);aspect-ratio:4/3">
+        <div style="position:relative;border-radius:14px;overflow:hidden;background:var(--cream3);aspect-ratio:1/1">
           ${imgContent}
           ${imgs.length>1?`<div style="position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:3px 8px;border-radius:20px">+${imgs.length-1} görsel</div>`:''}
           <div style="position:absolute;top:10px;left:10px">${chip(t.status)}</div>
