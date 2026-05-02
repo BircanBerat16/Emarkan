@@ -561,7 +561,23 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
       <div class="ph"><div class="pt">Profilim</div><button class="btn btn-teal btn-sm" onclick="saveProfil()">Kaydet</button></div>
       <div class="sp mb">
         <div class="card mb" style="overflow:hidden">
-          <div id="profil-banner" style="height:72px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:24px;font-weight:600;background:#1A2E28;color:#4DB896"><span id="profil-av">?</span></div>
+          <div id="profil-kapak-wrap" style="position:relative;height:140px;background:#1A2E28;overflow:hidden;cursor:pointer" onclick="document.getElementById('kapak-file').click()">
+          <img id="profil-kapak-img" style="width:100%;height:100%;object-fit:cover;display:none">
+          <div id="profil-kapak-ph" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.3);font-size:13px;flex-direction:column;gap:6px">
+            <span style="font-size:28px">🖼</span>
+            <span>Kapak fotoğrafı ekle</span>
+          </div>
+          <input type="file" id="kapak-file" accept="image/*" style="display:none" onchange="uploadKapak(this)">
+          <div style="position:absolute;bottom:8px;right:10px;background:rgba(0,0,0,.5);color:#fff;font-size:11px;padding:3px 8px;border-radius:20px">Değiştir</div>
+        </div>
+        <div style="padding:0 14px;position:relative;margin-top:-28px;margin-bottom:8px;display:flex;align-items:flex-end;gap:10px">
+          <div id="profil-logo-wrap" style="width:56px;height:56px;border-radius:14px;border:2.5px solid var(--white);overflow:hidden;background:#1A2E28;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center" onclick="document.getElementById('logo-file').click()">
+            <img id="profil-logo-img" style="width:100%;height:100%;object-fit:cover;display:none">
+            <span id="profil-av" style="font-family:'Playfair Display',serif;font-size:20px;font-weight:600;color:#4DB896">?</span>
+            <input type="file" id="logo-file" accept="image/*" style="display:none" onchange="uploadLogo(this)">
+          </div>
+          <div style="margin-bottom:4px;font-size:11px;color:var(--ink3)">Logo ekle</div>
+        </div>
           <div style="padding:14px">
             <div class="fl"><label>Firma adı</label><input id="p-firma" type="text" placeholder="Firmanızın adı"></div>
             <div class="fl"><label>Açıklama</label><textarea id="p-aciklama" placeholder="Firmanız hakkında kısa bir açıklama..."></textarea></div>
@@ -680,6 +696,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
         <div style="font-size:11px;color:var(--ink3);margin-top:3px">JPG, PNG, WEBP</div>
       </div>
       <div class="upload-preview" id="talep-preview"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;background:var(--cream2);border-radius:12px;padding:12px">
+      <input type="checkbox" id="nt-tel-paylash" style="width:18px;height:18px;cursor:pointer;accent-color:var(--teal);flex-shrink:0">
+      <label for="nt-tel-paylash" style="font-size:13px;color:var(--ink2);cursor:pointer;line-height:1.5">
+        Telefon numaram teklif veren üreticilere görünsün
+        <div style="font-size:11px;color:var(--ink3);margin-top:2px">Profilimdeki telefon numarası paylaşılır</div>
+      </label>
     </div>
     <button class="btn btn-teal" id="yeni-submit-btn" onclick="subTalep()">Talebi Yayınla</button>
     <button class="btn btn-ghost" style="margin-top:8px" onclick="cm('m-yeni')">İptal</button>
@@ -934,6 +957,12 @@ function buildKategoriSelect(selId,subId){
   if(wrap)wrap.style.display=alts.length?'':'none';
 }
 
+
+function maskMarka(ad){
+  if(!ad) return '***';
+  if(ad.length<=2) return ad+'***';
+  return ad.substring(0,2)+'*'.repeat(Math.max(3,ad.length-2));
+}
 const TEKLIF_UCRETI = 85;
 function getTeklifUcreti(toplamTeklif){
   const oran=(Math.random()*1.2+0.3)/100;
@@ -1158,10 +1187,10 @@ function rProducers(){
   if(!list.length){el.innerHTML='<div class="empty"><div class="empty-t">Sonuç bulunamadı</div></div>';return;}
   el.innerHTML=list.map(p=>`
     <div class="pcard" onclick="openProducer('${p.id}')">
-      <div class="pbanner" style="background:linear-gradient(145deg,${p.bg},${p.bg}dd)">
-        <div class="pbanner-badge">${p.av}</div>
+      <div class="pbanner" style="background:linear-gradient(145deg,${p.bg},${p.bg}dd);position:relative">
+        ${p.kapak?`<img src="${p.kapak}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.7">`:''}
+        <div class="pbanner-badge">${p.logo?`<img src="${p.logo}" style="width:24px;height:24px;border-radius:6px;object-fit:cover;vertical-align:middle;margin-right:4px">`:''}${p.av}</div>
         <div class="pbanner-rating">★ ${p.rating}</div>
-        <div style="font-family:'Playfair Display',serif;font-size:32px;font-weight:600;color:${p.tc};opacity:.3;position:absolute;bottom:10px;right:14px;line-height:1">${p.av}</div>
       </div>
       <div class="pbody">
         <div class="pbody-top">
@@ -1169,7 +1198,7 @@ function rProducers(){
           <div class="pbody-rating">★ ${p.rating} <span style="color:var(--ink3);font-weight:400">(${p.rv})</span></div>
         </div>
         <div class="pbody-loc">${p.loc} · ${p.cert.join(', ')}</div>
-        <div class="pbody-tags">${p.tags.map(t=>`<span class="pbody-tag">${t}</span>`).join('')}</div>
+        <div class="pbody-tags">${p.tags.map(t=>`<span class="pbody-tag">${t}</span>`).join('')}${p.kats&&p.kats.length?p.kats.slice(0,3).map(k=>`<span class="pbody-tag" style="background:var(--teal-l);color:var(--teal)">${k}</span>`).join(''):''}</div>
         <div class="pbody-info">Min. <strong>${p.moq} adet</strong> · <strong>${p.days} gün</strong> teslim</div>
       </div>
     </div>`).join('');
@@ -1274,7 +1303,7 @@ async function rUreticiDash(){
           <div style="position:absolute;top:10px;left:10px">${chip(t.status)}</div>
         </div>
         <div style="padding:10px 2px 4px">
-          <div style="font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.marka_adi}</div>
+          <div style="font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${maskMarka(t.marka_adi)}</div>
           ${t.kategori?`<div style="font-size:11px;color:var(--warm2);font-weight:500">${t.kategori}${t.alt_kategori?' › '+t.alt_kategori:''}</div>`:''}
           <div style="font-size:12px;color:var(--ink3)">${t.urun} · ${t.adet} adet</div>
           <button onclick="event.stopPropagation();openTeklif('${t.id}')" style="width:100%;margin-top:8px;padding:9px;background:var(--teal);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">Teklif Ver</button>
@@ -1346,7 +1375,7 @@ async function rDash(){
 
 // YENİ TALEP
 function openNewTalep(){
-  ['nt-urun','nt-adet','nt-tarih','nt-butce','nt-not'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); initTalepUpload();
+  ['nt-urun','nt-adet','nt-tarih','nt-butce','nt-not'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); const telCb=document.getElementById('nt-tel-paylash');if(telCb)telCb.checked=false; initTalepUpload();
   buildKategoriSelect('nt-kategori','nt-altkategori');
   const wrap=document.getElementById('nt-altkategori-wrap');if(wrap)wrap.style.display='none';
   document.getElementById('nt-kategori').onchange=function(){const wrap=document.getElementById('nt-altkategori-wrap');if(wrap)wrap.style.display=this.value?'':'none'; buildKategoriSelect('nt-kategori','nt-altkategori'); this.dispatchEvent(new Event('change'));};
@@ -1372,7 +1401,9 @@ async function subTalep(){
       butce:+document.getElementById('nt-butce').value||null,
       notlar:document.getElementById('nt-not').value,
       gorseller,
-      status:'open',createdAt:fb.serverTimestamp()
+      status:'open',createdAt:fb.serverTimestamp(),
+      tel_paylash:document.getElementById('nt-tel-paylash').checked,
+      marka_tel:document.getElementById('nt-tel-paylash').checked?(PROFILE.telefon||null):null
     });
     cm('m-yeni');toast('Talep yayınlandı!');rDash();
   }catch(e){toast('Hata: '+e.message);}
@@ -1476,7 +1507,7 @@ async function openTalep(tid){
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;margin-top:14px">
         <div style="flex:1;min-width:0;margin-right:10px">
           <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:600;color:var(--ink)">${t.urun}</div>
-          <div style="font-size:12px;color:var(--ink3);margin-top:2px">${t.marka_adi} · ${fmtD(t.createdAt)}</div>
+          <div style="font-size:12px;color:var(--ink3);margin-top:2px">${m?t.marka_adi:maskMarka(t.marka_adi)} · ${fmtD(t.createdAt)}</div>
         </div>${chip(t.status)}
       </div>
       <div class="tklf-cnt" style="margin-bottom:10px"><div class="tklf-dot"></div><strong>${teklifler.length}</strong>&nbsp;teklif geldi</div>
@@ -1484,7 +1515,8 @@ async function openTalep(tid){
     </div>
     <div style="padding:12px 18px">
       <div style="font-size:11px;font-weight:500;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Talep Detayları</div>
-      ${[['Ürün',t.urun],['Adet',t.adet+' adet'],['Bütçe (birim)',fmt(t.butce)+'/adet'],['Toplam bütçe',fmt(t.butce*t.adet)],['Teslim tarihi',t.tarih||'—']].map(([l,v])=>`<div class="irow"><span class="il">${l}</span><span class="iv">${v}</span></div>`).join('')}
+      ${[['Ürün',t.urun],['Adet',t.adet+' adet'],['Bütçe (birim)',t.butce?fmt(t.butce)+'/adet':'Belirtilmedi'],['Teslim tarihi',t.tarih||'—']].map(([l,v])=>`<div class="irow"><span class="il">${l}</span><span class="iv">${v}</span></div>`).join('')}
+      ${!m&&t.tel_paylash&&PROFILE?`<div class="irow"><span class="il">İletişim</span><span class="iv" style="color:var(--teal)">${t.marka_tel||'Belirtilmemiş'}</span></div>`:''}
       ${t.notlar?`<div style="margin-top:10px;font-size:13px;color:var(--ink2);background:var(--cream2);border-radius:10px;padding:11px;line-height:1.6">${t.notlar}</div>`:''}
       ${tkHTML}
     </div>`;
@@ -1836,6 +1868,19 @@ async function rProfil(){
   const data=snap.data();
   PROFILE={...PROFILE,...data};
   const set=(id,val)=>{const el=document.getElementById(id);if(el&&val!=null)el.value=val;};
+  // Kapak ve logo
+  if(data.kapak_url){
+    const ki=document.getElementById('profil-kapak-img');
+    const kp=document.getElementById('profil-kapak-ph');
+    if(ki){ki.src=data.kapak_url;ki.style.display='block';}
+    if(kp)kp.style.display='none';
+  }
+  if(data.logo_url){
+    const li=document.getElementById('profil-logo-img');
+    const av=document.getElementById('profil-av');
+    if(li){li.src=data.logo_url;li.style.display='block';}
+    if(av)av.style.display='none';
+  }
   set('p-firma',data.firma_adi||data.name);
   set('p-aciklama',data.aciklama);
   set('p-konum',data.konum);
@@ -1911,6 +1956,40 @@ async function handleKatalogFile(input){
     document.getElementById('katalog-upload-txt').textContent = '✓ Yüklendi';
   }catch(e){ toast('Görsel yüklenemedi'); document.getElementById('katalog-upload-txt').textContent = '+ Görsel seç'; }
   input.value = '';
+}
+
+async function uploadKapak(input){
+  const file=input.files[0];if(!file)return;
+  const ph=document.getElementById('profil-kapak-ph');
+  if(ph)ph.textContent='Yükleniyor...';
+  try{
+    const url=await uploadToCloudinary(file);
+    const img=document.getElementById('profil-kapak-img');
+    img.src=url;img.style.display='block';
+    if(ph)ph.style.display='none';
+    // Profil güncelle
+    const fb=getFB();
+    await fb.updateDoc(fb.doc(fb.db,'profiles',ME.uid),{kapak_url:url});
+    PROFILE.kapak_url=url;
+    toast('Kapak fotoğrafı güncellendi!');
+  }catch(e){toast('Yüklenemedi');if(ph)ph.textContent='Kapak fotoğrafı ekle';}
+  input.value='';
+}
+
+async function uploadLogo(input){
+  const file=input.files[0];if(!file)return;
+  try{
+    const url=await uploadToCloudinary(file);
+    const img=document.getElementById('profil-logo-img');
+    img.src=url;img.style.display='block';
+    const av=document.getElementById('profil-av');
+    if(av)av.style.display='none';
+    const fb=getFB();
+    await fb.updateDoc(fb.doc(fb.db,'profiles',ME.uid),{logo_url:url});
+    PROFILE.logo_url=url;
+    toast('Logo güncellendi!');
+  }catch(e){toast('Yüklenemedi');}
+  input.value='';
 }
 async function rKatalog(){
   const fb=getFB();
