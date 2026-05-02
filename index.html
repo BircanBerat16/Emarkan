@@ -530,7 +530,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 
     <!-- PAZAR -->
     <div id="pg-pazar" class="pg">
-      <div class="sbar"><div class="swrap"><span class="sico">⌕</span><input class="sinput" id="sq" placeholder="Üretici, kumaş, konum..." oninput="rProducers()"></div></div>
+      <div class="sbar"><div class="swrap"><span class="sico">⌕</span><input class="sinput" id="sq" placeholder="Üretici, kumaş, konum..." oninput="filterProducers()"></div></div>
       <div class="fstrip">
         <button class="fpill" id="f-oeko" onclick="tf('oeko')">OEKO-TEX</button>
         <button class="fpill" id="f-gots" onclick="tf('gots')">GOTS</button>
@@ -1177,55 +1177,115 @@ const PRODUCERS=[
 ];
 
 function tf(f){AF.has(f)?AF.delete(f):AF.add(f);document.getElementById('f-'+f).classList.toggle('on',AF.has(f));rProducers();}
-function rProducers(){
-  const q=(document.getElementById('sq')?.value||'').toLowerCase();
-  const list=PRODUCERS.filter(p=>{
-    const mq=!q||p.name.toLowerCase().includes(q)||p.loc.toLowerCase().includes(q)||p.tags.some(t=>t.toLowerCase().includes(q));
-    return mq&&[...AF].every(f=>p.f.includes(f));
-  });
+
+let _allProducers = [];
+
+async function rProducers(){
   const el=document.getElementById('plist');if(!el)return;
+  el.innerHTML='<div style="padding:20px;text-align:center;color:var(--ink3)">Yükleniyor...</div>';
+  
+  try{
+    const fb=getFB();
+    const snap=await fb.getDocs(fb.query(fb.collection(fb.db,'profiles'),fb.where('role','==','uretici')));
+    _allProducers=snap.docs.map(d=>({id:d.id,...d.data()}));
+  }catch(e){
+    _allProducers=[];
+  }
+  
+  filterProducers();
+}
+
+function filterProducers(){
+  const el=document.getElementById('plist');if(!el)return;
+  const q=(document.getElementById('sq')?.value||'').toLowerCase();
+  
+  let list=_allProducers.filter(p=>{
+    const name=(p.firma_adi||p.name||'').toLowerCase();
+    const konum=(p.konum||'').toLowerCase();
+    const kats=(p.urun_kategorileri||[]).join(' ').toLowerCase();
+    const serts=(p.sertifikalar||[]).join(' ').toLowerCase();
+    const mq=!q||name.includes(q)||konum.includes(q)||kats.includes(q)||serts.includes(q);
+    
+    // Filtre pilleri
+    let fMatch=true;
+    if(AF.has('oeko'))fMatch=fMatch&&serts.includes('oeko-tex');
+    if(AF.has('gots'))fMatch=fMatch&&serts.includes('gots');
+    if(AF.has('kucuk'))fMatch=fMatch&&(p.moq||9999)<=300;
+    if(AF.has('ist'))fMatch=fMatch&&konum.includes('istanbul');
+    if(AF.has('bur'))fMatch=fMatch&&konum.includes('bursa');
+    
+    return mq&&fMatch;
+  });
+
   if(!list.length){el.innerHTML='<div class="empty"><div class="empty-t">Sonuç bulunamadı</div></div>';return;}
-  el.innerHTML=list.map(p=>`
-    <div class="pcard" onclick="openProducer('${p.id}')">
-      <div class="pbanner" style="background:linear-gradient(145deg,${p.bg},${p.bg}dd);position:relative">
-        ${p.kapak?`<img src="${p.kapak}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.7">`:''}
-        <div class="pbanner-badge">${p.logo?`<img src="${p.logo}" style="width:24px;height:24px;border-radius:6px;object-fit:cover;vertical-align:middle;margin-right:4px">`:''}${p.av}</div>
-        <div class="pbanner-rating">★ ${p.rating}</div>
+  
+  el.innerHTML='<div class="plist-grid">' + list.map(p=>{
+    const name=p.firma_adi||p.name||'Üretici';
+    const av=name.substring(0,2).toUpperCase();
+    const kats=p.urun_kategorileri||[];
+    const serts=p.sertifikalar||[];
+    const bg=p.kapak_url?'#1A2E28':'#1A2E28';
+    return`<div class="pcard" onclick="openProducerById('${p.id}')">
+      <div class="pbanner" style="background:linear-gradient(145deg,#1A2E28,#0D1A14);position:relative;height:200px">
+        ${p.kapak_url?`<img src="${p.kapak_url}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`:''}
+        <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(0,0,0,.6))"></div>
+        <div style="position:absolute;top:12px;left:12px;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;color:#fff">${p.konum||'—'}</div>
+        ${serts.length?`<div style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);border-radius:20px;padding:4px 8px;font-size:10px;color:#fff">${serts[0]}</div>`:''}
+        <div style="position:absolute;bottom:12px;left:12px;display:flex;align-items:center;gap:8px">
+          ${p.logo_url?`<img src="${p.logo_url}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;border:1.5px solid rgba(255,255,255,.5)">`:`<div style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;color:#fff">${av}</div>`}
+          <div style="color:#fff;font-weight:600;font-size:14px;text-shadow:0 1px 3px rgba(0,0,0,.5)">${name}</div>
+        </div>
       </div>
       <div class="pbody">
-        <div class="pbody-top">
-          <div class="pbody-name">${p.name}</div>
-          <div class="pbody-rating">★ ${p.rating} <span style="color:var(--ink3);font-weight:400">(${p.rv})</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
+          ${kats.slice(0,4).map(k=>`<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:var(--teal-l);color:var(--teal);font-weight:500">${k.includes('›')?k.split('›')[1].trim():k}</span>`).join('')}
+          ${kats.length>4?`<span style="font-size:11px;color:var(--ink3)">+${kats.length-4}</span>`:''}
         </div>
-        <div class="pbody-loc">${p.loc} · ${p.cert.join(', ')}</div>
-        <div class="pbody-tags">${p.tags.map(t=>`<span class="pbody-tag">${t}</span>`).join('')}${p.kats&&p.kats.length?p.kats.slice(0,3).map(k=>`<span class="pbody-tag" style="background:var(--teal-l);color:var(--teal)">${k}</span>`).join(''):''}</div>
-        <div class="pbody-info">Min. <strong>${p.moq} adet</strong> · <strong>${p.days} gün</strong> teslim</div>
+        <div style="font-size:12px;color:var(--ink3);display:flex;gap:12px">
+          ${p.moq?`<span>Min. <strong style="color:var(--ink)">${p.moq}</strong> adet</span>`:''}
+          ${p.teslim_suresi?`<span><strong style="color:var(--ink)">${p.teslim_suresi}</strong> gün teslim</span>`:''}
+        </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('') + '</div>';
 }
 
-function openProducer(pid){
-  const p=PRODUCERS.find(x=>x.id===pid);
+async function openProducerById(uid){
+  const fb=getFB();
+  let p=_allProducers.find(x=>x.id===uid);
+  if(!p){
+    const snap=await fb.getDoc(fb.doc(fb.db,'profiles',uid));
+    if(!snap.exists())return;
+    p={id:snap.id,...snap.data()};
+  }
+  const name=p.firma_adi||p.name||'Üretici';
+  const kats=p.urun_kategorileri||[];
+  const serts=p.sertifikalar||[];
   document.getElementById('ps-c').innerHTML=`
-    <div style="padding:0 18px 14px;border-bottom:1px solid var(--border)">
-      <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px">
-        <div style="width:50px;height:50px;border-radius:12px;background:${p.bg};color:${p.tc};display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:20px;font-weight:600;flex-shrink:0">${p.av}</div>
-        <div><div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:600;color:var(--ink)">${p.name}</div><div style="font-size:12px;color:var(--ink3);margin-top:1px">${p.loc} · ${p.cert.join(', ')}</div></div>
+    <div style="position:relative;height:160px;background:#1A2E28;overflow:hidden">
+      ${p.kapak_url?`<img src="${p.kapak_url}" style="width:100%;height:100%;object-fit:cover">`:''}
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent,rgba(0,0,0,.6))"></div>
+      <div style="position:absolute;bottom:14px;left:18px;display:flex;align-items:center;gap:10px">
+        ${p.logo_url?`<img src="${p.logo_url}" style="width:44px;height:44px;border-radius:12px;object-fit:cover;border:2px solid rgba(255,255,255,.5)">`:`<div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:#fff">${name.substring(0,2).toUpperCase()}</div>`}
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:600;color:#fff">${name}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.6)">${p.konum||''}</div>
+        </div>
       </div>
-      <div style="font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:12px">${p.desc}</div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:12px 18px">
-      ${[['Min. sipariş',p.moq+' adet'],['Kapasite',p.cap],['Teslim',p.days+' gün']].map(([l,v])=>`
-      <div style="background:var(--cream2);border-radius:10px;padding:10px">
-        <div style="font-size:10px;color:var(--ink3);margin-bottom:3px">${l}</div>
-        <div style="font-size:13px;font-weight:500;color:var(--ink)">${v}</div>
-      </div>`).join('')}
-    </div>
-    <div style="padding:0 18px 6px"><button class="btn btn-teal" onclick="openNewTalep();cs('ps')">Talep Oluştur</button></div>`;
+    <div style="padding:14px 18px">
+      ${p.aciklama?`<p style="font-size:13px;color:var(--ink2);line-height:1.7;margin-bottom:14px">${p.aciklama}</p>`:''}
+      ${kats.length?`<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--ink3);font-weight:500;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Üretim Kategorileri</div><div style="display:flex;flex-wrap:wrap;gap:5px">${kats.map(k=>`<span style="font-size:12px;padding:3px 10px;border-radius:20px;background:var(--teal-l);color:var(--teal)">${k.includes('›')?k.split('›')[1].trim():k}</span>`).join('')}</div></div>`:''}
+      ${serts.length?`<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--ink3);font-weight:500;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Sertifikalar</div><div style="display:flex;flex-wrap:wrap;gap:5px">${serts.map(s=>`<span style="font-size:12px;padding:3px 10px;border-radius:20px;background:var(--warm-l);color:var(--warm2)">${s}</span>`).join('')}</div></div>`:''}
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
+        ${p.moq?`<div style="background:var(--cream2);border-radius:10px;padding:10px"><div style="font-size:10px;color:var(--ink3)">Min. sipariş</div><div style="font-size:13px;font-weight:500">${p.moq} adet</div></div>`:''}
+        ${p.teslim_suresi?`<div style="background:var(--cream2);border-radius:10px;padding:10px"><div style="font-size:10px;color:var(--ink3)">Teslim</div><div style="font-size:13px;font-weight:500">${p.teslim_suresi} gün</div></div>`:''}
+        ${p.kapasite?`<div style="background:var(--cream2);border-radius:10px;padding:10px"><div style="font-size:10px;color:var(--ink3)">Kapasite</div><div style="font-size:13px;font-weight:500">${p.kapasite}</div></div>`:''}
+      </div>
+      <button class="btn btn-teal" onclick="openNewTalep();cs('ps')">Talep Oluştur</button>
+    </div>`;
   os('ps');
 }
-
-// DASHBOARD
 
 
 async function rUreticiDash(){
