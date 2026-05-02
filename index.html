@@ -850,6 +850,34 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 <div id="toast"></div>
 
 <script>
+const KATEGORILER = {
+  "Bebek (0-5 yas)": ["Tulum & Zibin","Ust Giyim","Alt Giyim","Pijama & Uyku","Dis Giyim","Aksesuar"],
+  "Cocuk (5-14 yas)": ["Ust Giyim","Alt Giyim","Elbise & Etek","Dis Giyim","Okul Kiyafeti","Spor Giyim"],
+  "Kadin": ["Elbise & Etek","Takim & Ceket","Ust Giyim","Alt Giyim","Ic Camasiri & Pijama","Dis Giyim","Spor Giyim"],
+  "Erkek": ["Ust Giyim","Alt Giyim","Takim & Blazer","Ic Camasiri & Pijama","Dis Giyim","Spor Giyim"],
+  "Aksesuar & Diger": ["Sapka & Bere","Canta","Fular & Atki","Eldiven","Diger"]
+};
+
+function buildKategoriSelect(selId,subId){
+  const sel=document.getElementById(selId);
+  if(!sel)return;
+  const mevcut=sel.value;
+  sel.innerHTML='<option value="">Kategori secin</option>';
+  Object.keys(KATEGORILER).forEach(k=>{
+    const o=document.createElement('option');
+    o.value=k;o.textContent=k;
+    if(k===mevcut)o.selected=true;
+    sel.appendChild(o);
+  });
+  const sub=document.getElementById(subId);
+  if(!sub)return;
+  const alts=KATEGORILER[sel.value]||[];
+  sub.innerHTML='<option value="">Alt kategori secin</option>';
+  alts.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;sub.appendChild(o);});
+  const wrap=document.getElementById('nt-altkategori-wrap');
+  if(wrap)wrap.style.display=alts.length?'':'none';
+}
+
 const TEKLIF_UCRETI = 85;
 function getTeklifUcreti(toplamTeklif){
   const oran=(Math.random()*1.2+0.3)/100;
