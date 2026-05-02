@@ -262,10 +262,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 
 
 /* TALEP GRID */
-#tal-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:0}
+#tal-list{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:0}
 .talep-card{background:var(--white);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .18s;box-shadow:var(--shadow)}
 .talep-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(26,23,20,.12)}
 .talep-card:active{transform:translateY(0)}
+
+
+@media(max-width:640px){#tal-list{gap:8px}}
 
 /* AIRBNB STYLE PRODUCER CARDS */
 .plist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding:0}
@@ -1085,7 +1088,7 @@ async function openTalep(tid){
     }
   }
   const gorselHTML = t.gorseller&&t.gorseller.length ? `
-    <div style="position:relative;height:220px;background:var(--cream3);overflow:hidden">
+    <div style="position:relative;height:260px;background:var(--cream3);overflow:hidden">
       <img id="talep-main-photo" src="${t.gorseller[0]}" style="width:100%;height:100%;object-fit:cover">
       ${t.gorseller.length>1?`
       <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px">
