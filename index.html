@@ -1624,7 +1624,6 @@ async function openTalep(tid){
     <div style="padding:12px 18px">
       <div style="font-size:11px;font-weight:500;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Talep Detayları</div>
       ${[['Ürün',t.urun],['Adet',t.adet+' adet'],['Bütçe (birim)',t.butce?fmt(t.butce)+'/adet':'Belirtilmedi'],['Teslim tarihi',t.tarih||'—']].map(([l,v])=>`<div class="irow"><span class="il">${l}</span><span class="iv">${v}</span></div>`).join('')}
-      ${!m&&t.tel_paylash&&PROFILE?`<div class="irow"><span class="il">İletişim</span><span class="iv" style="color:var(--teal)">${t.marka_tel||'Belirtilmemiş'}</span></div>`:''}
       ${t.notlar?`<div style="margin-top:10px;font-size:13px;color:var(--ink2);background:var(--cream2);border-radius:10px;padding:11px;line-height:1.6">${t.notlar}</div>`:''}
       ${tkHTML}
     </div>`;
@@ -1814,12 +1813,25 @@ async function openKonusma(kid){
   const k=kSnap.data();
   const m=PROFILE.role==='marka';
   const karsi=m?k.uretici_adi:k.marka_adi;
+  // Talep bilgisini çek - telefon ve gerçek isim için
+  let talepData = null;
+  try{
+    const tSnap=await fb.getDoc(fb.doc(fb.db,'talepler',k.talep_id));
+    if(tSnap.exists())talepData=tSnap.data();
+  }catch(e){}
+
+  const m2=PROFILE.role==='marka';
+  // Üretici ise gerçek marka adını göster
+  const gercekAd = m2 ? k.uretici_adi : k.marka_adi;
+  const telefon = !m2 && talepData?.tel_paylash && talepData?.marka_tel ? talepData.marka_tel : null;
+
   document.getElementById('ms-header').innerHTML=`
     <div style="display:flex;align-items:center;gap:10px">
-      <div style="width:36px;height:36px;border-radius:50%;background:var(--teal-l);color:var(--teal);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px">${(karsi||'?').substring(0,2)}</div>
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--teal-l);color:var(--teal);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px">${(gercekAd||'?').substring(0,2)}</div>
       <div>
-        <div style="font-weight:600;color:var(--ink)">${karsi}</div>
+        <div style="font-weight:600;color:var(--ink)">${gercekAd}</div>
         <div style="font-size:12px;color:var(--ink3)">${k.urun}</div>
+        ${telefon?`<div style="font-size:12px;color:var(--teal);margin-top:2px;display:flex;align-items:center;gap:4px">📞 ${telefon}</div>`:''}
       </div>
     </div>`;
   // Okundu işaretle
