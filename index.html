@@ -262,10 +262,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 
 
 /* TALEP GRID */
-#tal-list{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:0}
+#tal-list{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:0}
 .talep-card{background:transparent;border:none;border-radius:0;cursor:pointer;transition:all .18s}
 .talep-card:hover .talep-img-wrap img{transform:scale(1.04)}
-.talep-img-wrap{position:relative;border-radius:14px;overflow:hidden;background:var(--cream3);aspect-ratio:1/1}
+.talep-img-wrap{position:relative;border-radius:14px;overflow:hidden;background:var(--cream3);aspect-ratio:4/3}
 .talep-main-img{width:100%;height:100%;object-fit:cover;transition:transform .3s;display:block}
 .talep-chip-overlay{position:absolute;top:10px;left:10px}
 .talep-img-count{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:3px 8px;border-radius:20px}
@@ -473,7 +473,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
         <div class="pt" id="tal-title">Talepler</div>
         <button class="btn btn-teal btn-sm" id="yeni-tal-btn" onclick="openNewTalep()" style="display:none">+ Yeni talep</button>
       </div>
-      <div style="padding:0 16px 16px"><div id="tal-list"></div></div>
+      <div style="padding:0 20px 20px"><div id="tal-list"></div></div>
     </div>
 
     <!-- SİPARİŞLER -->
@@ -947,12 +947,12 @@ async function rDash(){
     {l:'Toplam harcama',v:fmt(siparisler.reduce((a,s)=>a+(s.tutar||0),0)),hi:false},
   ]:[
     {l:'Açık talep',v:talepler.filter(t=>t.status==='open').length,hi:talepler.some(t=>t.status==='open'),s:'Teklif verebilirsin'},
-    {l:'Bakiye',v:fmt(PROFILE.bakiye||0),hi:(PROFILE.bakiye||0)<TEKLIF_UCRETI,s:(PROFILE.bakiye||0)<TEKLIF_UCRETI?'Bakiye yükle':'Aktif'},
+    {l:'Bakiye',v:fmt(PROFILE.bakiye||0),hi:(PROFILE.bakiye||0)<TEKLIF_UCRETI,s:(PROFILE.bakiye||0)<TEKLIF_UCRETI?'Bakiye yükle ↑':'Aktif',click:'m-bakiye'},
     {l:'Aktif sipariş',v:siparisler.filter(s=>s.status!=='delivered').length,hi:false},
     {l:'Toplam kazanç',v:fmt(siparisler.filter(s=>s.status==='delivered').reduce((a,s)=>a+(s.tutar||0),0)),hi:false},
   ];
   document.getElementById('sgrid').innerHTML=stats.map(s=>`
-    <div class="scard ${s.hi?'hi':''}">
+    <div class="scard ${s.hi?'hi':''}" ${s.click?`onclick="om('${s.click}')" style="cursor:pointer"`:''}>
       <div class="slabel">${s.l}</div>
       <div class="sval">${s.v}</div>
       ${s.s?`<div class="ssub">${s.s}</div>`:''}
@@ -1030,13 +1030,14 @@ async function rTalepler(){
         <div class="talep-chip-overlay">${chip(t.status)}</div>
       </div>
       <div style="padding:10px 2px 4px">
-        <div style="font-weight:600;font-size:13px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m?t.urun:t.marka_adi}</div>
-        <div style="font-size:12px;color:var(--ink3);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m?t.marka_adi:t.urun}</div>
+        <div style="font-weight:600;font-size:14px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m?t.urun:t.marka_adi}</div>
+        <div style="font-size:13px;color:var(--ink3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m?t.marka_adi:t.urun}</div>
         <div style="font-size:12px;color:var(--ink3)">${t.adet} adet${t.tarih?' · '+fmtD(t.tarih):''}</div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
           <div class="tklf-cnt" style="margin:0"><div class="tklf-dot"></div>${counts[t.id]||0} teklif</div>
           ${t.butce?`<div style="font-size:12px;font-weight:600;color:var(--ink)">${fmt(t.butce)}<span style="font-size:10px;font-weight:400;color:var(--ink3)">/ad</span></div>`:''}
         </div>
+        ${!m&&t.status!=='accepted'?`<button onclick="event.stopPropagation();openTeklif('${t.id}')" style="width:100%;margin-top:8px;padding:9px;background:var(--teal);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">Teklif Ver</button>`:''}
       </div>
     </div>`;
   }).join('');
