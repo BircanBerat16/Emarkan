@@ -744,7 +744,12 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 <div id="toast"></div>
 
 <script>
-const TEKLIF_UCRETI = 500;
+const TEKLIF_UCRETI = 85;
+function getTeklifUcreti(toplamTeklif){
+  const oran=(Math.random()*1.2+0.3)/100;
+  const hesap=Math.round((toplamTeklif||0)*oran);
+  return Math.min(250,Math.max(85,hesap));
+}
 let ME = null, PROFILE = null, regRole = 'marka', curTalepId = null, _tkData = {};
 let _sertler = [], _katlar = [], AF = new Set();
 
@@ -1289,7 +1294,7 @@ async function updTeklif(){
   if(t){
     document.getElementById('mt-sub').textContent=t.marka_adi+' · '+t.adet+' adet '+t.urun;
     document.getElementById('tk-total').textContent=fmt(f*t.adet);
-    const uc=getTeklifUcreti();document.getElementById('tk-fee').textContent=fmt(uc);
+    const uc=getTeklifUcreti((+document.getElementById('tk-fiyat').value)*(t?.adet||0));document.getElementById('tk-fee').textContent=fmt(uc);
     document.getElementById('tk-fee-box').style.display='';
   }
 }
