@@ -1756,7 +1756,7 @@ async function rDash(){
 
 // YENİ TALEP
 function openNewTalep(){
-  ['nt-urun','nt-adet','nt-tarih','nt-butce','nt-not','nt-beden','nt-kategori','nt-altkategori','nt-teslim'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); const telCb=document.getElementById('nt-tel-paylash');if(telCb)telCb.checked=false; initTalepUpload();
+  ['nt-urun','nt-adet','nt-butce','nt-not','nt-beden','nt-kategori','nt-altkategori','nt-teslim'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); const telCb=document.getElementById('nt-tel-paylash');if(telCb)telCb.checked=false; initTalepUpload();
   buildKategoriPills();
   const altWrap=document.getElementById('nt-altkategori-wrap');if(altWrap)altWrap.style.display='none';
   document.getElementById('nt-teslim').value='';
@@ -1781,7 +1781,7 @@ async function subTalep(){
       alt_kategori:document.getElementById('nt-altkategori').value||null,
       beden:document.getElementById('nt-beden').value||null,
       teslim_suresi_tip:document.getElementById('nt-teslim').value||null,
-      tarih:document.getElementById('nt-tarih').value||null,
+      tarih:document.getElementById('nt-tarih')?.value||null,
       butce:+document.getElementById('nt-butce').value||null,
       notlar:document.getElementById('nt-not').value,
       gorseller,
