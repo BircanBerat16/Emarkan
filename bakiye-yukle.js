@@ -13,8 +13,10 @@ export default async function handler(req, res) {
 
   const { cardNumber, expireMonth, expireYear, cvc, cardHolderName, amount, userId, email } = req.body;
 
+  console.log('Request body:', { cardNumber: cardNumber?.slice(0,4)+'****', expireMonth, expireYear, amount, userId, email });
+
   if (!cardNumber || !expireMonth || !expireYear || !cvc || !amount || !userId) {
-    return res.status(400).json({ error: 'Eksik bilgi' });
+    return res.status(400).json({ error: 'Eksik bilgi', received: { cardNumber: !!cardNumber, expireMonth: !!expireMonth, expireYear: !!expireYear, cvc: !!cvc, amount: !!amount, userId: !!userId } });
   }
 
   const callbackUrl = `https://www.emarkan.com.tr/api/bakiye-callback?userId=${userId}&amount=${amount}`;
@@ -31,19 +33,19 @@ export default async function handler(req, res) {
     paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
     callbackUrl,
     paymentCard: {
-      cardHolderName,
+      cardHolderName: cardHolderName || 'Kart Sahibi',
       cardNumber: cardNumber.replace(/\s/g, ''),
-      expireMonth,
-      expireYear,
+      expireMonth: expireMonth.trim(),
+      expireYear: expireYear.trim(),
       cvc,
       registerCard: '0'
     },
     buyer: {
       id: userId,
-      name: cardHolderName.split(' ')[0] || 'Kullanici',
-      surname: cardHolderName.split(' ')[1] || 'Kullanici',
+      name: (cardHolderName || 'Kullanici').split(' ')[0],
+      surname: (cardHolderName || 'Kullanici Soyad').split(' ')[1] || 'Kullanici',
       gsmNumber: '+905000000000',
-      email,
+      email: email || 'kullanici@emarkan.com.tr',
       identityNumber: '74300864791',
       lastLoginDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
       registrationDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
@@ -53,13 +55,13 @@ export default async function handler(req, res) {
       country: 'Turkey',
     },
     shippingAddress: {
-      contactName: cardHolderName,
+      contactName: cardHolderName || 'Kart Sahibi',
       city: 'Istanbul',
       country: 'Turkey',
       address: 'Turkiye',
     },
     billingAddress: {
-      contactName: cardHolderName,
+      contactName: cardHolderName || 'Kart Sahibi',
       city: 'Istanbul',
       country: 'Turkey',
       address: 'Turkiye',
@@ -77,7 +79,9 @@ export default async function handler(req, res) {
 
   return new Promise((resolve) => {
     iyzipay.threedsInitialize.create(request, (err, result) => {
+      console.log('iyzico result:', JSON.stringify(result));
       if (err) {
+        console.error('iyzico error:', err);
         res.status(500).json({ error: err.message || 'Odeme baslatılamadı' });
         return resolve();
       }
@@ -89,7 +93,9 @@ export default async function handler(req, res) {
       } else {
         res.status(400).json({
           error: result.errorMessage || 'Odeme baslatılamadı',
-          errorCode: result.errorCode
+          errorCode: result.errorCode,
+          errorGroup: result.errorGroup,
+          fullResult: result
         });
       }
       resolve();
