@@ -1899,7 +1899,18 @@ async function openTalep(tid){
     </div>
     <div style="padding:12px 18px">
       <div style="font-size:11px;font-weight:500;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Talep Detayları</div>
-      ${[['Ürün',t.urun],['Adet',t.adet+' adet'],['Bütçe (birim)',t.butce?fmt(t.butce)+'/adet':'Belirtilmedi'],['Teslim tarihi',t.tarih||'—']].map(([l,v])=>`<div class="irow"><span class="il">${l}</span><span class="iv">${v}</span></div>`).join('')}
+      ${(()=>{
+        const TESLIM_L={'1_ay':'1 Ay İçinde','2_ay':'2 Ay İçinde','3_ay':'3 Ay İçinde','sadece_uretici':'Sadece Üretici Arıyorum'};
+        const rows=[
+          ['Kategori', t.kategori?(t.kategori+(t.alt_kategori?' › '+t.alt_kategori:'')):'—'],
+          ['Ürün', t.urun],
+          ['Üretim Adeti', t.adet+' adet'],
+          ['Beden Aralığı', t.beden||'—'],
+          ['Teslim Zamanı', TESLIM_L[t.teslim_suresi_tip]||t.tarih||'—'],
+          ['Bütçe (birim)', t.butce?fmt(t.butce)+'/adet':'Belirtilmedi'],
+        ];
+        return rows.map(([l,v])=>`<div class="irow"><span class="il">${l}</span><span class="iv">${v}</span></div>`).join('');
+      })()}
       ${t.notlar?`<div style="margin-top:10px;font-size:13px;color:var(--ink2);background:var(--cream2);border-radius:10px;padding:11px;line-height:1.6">${t.notlar}</div>`:''}
       ${tkHTML}
     </div>`;
