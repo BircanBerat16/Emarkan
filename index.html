@@ -2554,27 +2554,16 @@ async function doBakiyeYukle(){
       })
     });
     const data = await response.json();
-    if(data.success && data.threeDSHtml){
-      // 3DS sayfasını popup olarak aç
+    if(data.success || data.paymentId){
+      const fb=getFB();
+      const yeni=(PROFILE.bakiye||0)+amt;
+      await fb.updateDoc(fb.doc(fb.db,'profiles',ME.uid),{bakiye:yeni});
+      PROFILE.bakiye=yeni;
+      document.getElementById('bakiye-val').textContent=yeni.toLocaleString('tr-TR');
       cm('m-bakiye');
-      const popup = document.createElement('div');
-      popup.id = 'threeds-popup';
-      popup.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#fff;display:flex;flex-direction:column';
-      const bar = document.createElement('div');
-      bar.style.cssText = 'padding:14px 16px;background:#1A1714;display:flex;justify-content:space-between;align-items:center;flex-shrink:0';
-      bar.innerHTML = '<span style="color:#fff;font-size:16px;font-weight:600">3D Secure Ödeme</span>';
-      const closeBtn = document.createElement('button');
-      closeBtn.textContent = 'İptal';
-      closeBtn.style.cssText = 'background:rgba(255,255,255,.2);border:none;color:#fff;padding:5px 12px;border-radius:20px;cursor:pointer;font-size:12px';
-      closeBtn.onclick = () => popup.remove();
-      bar.appendChild(closeBtn);
-      const iframe = document.createElement('iframe');
-      iframe.style.cssText = 'flex:1;border:none;width:100%';
-      iframe.srcdoc = data.threeDSHtml;
-      popup.appendChild(bar);
-      popup.appendChild(iframe);
-      document.body.appendChild(popup);
-      toast('Bankanızın güvenlik sayfasına yönlendiriliyorsunuz...');
+      toast(fmt(amt)+' bakiye başarıyla yüklendi!');
+      ['bakiye-amt','b-cn','b-ce','b-cv','b-ch'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+      rDash();
     } else {
       toast('Ödeme başarısız: '+(data.error||'Bilinmeyen hata'));
     }
@@ -2584,28 +2573,7 @@ async function doBakiyeYukle(){
   btn.disabled=false;btn.textContent='Bakiye Yükle';
 }
 
-// Ödeme sonucu kontrol - sayfa yüklenince URL'deki parametreye bak
-function checkPaymentResult(){
-  const params = new URLSearchParams(window.location.search);
-  const odeme = params.get('odeme');
-  const miktar = params.get('miktar');
-  if(odeme === 'basarili' && miktar){
-    setTimeout(()=>{
-      toast(fmt(+miktar) + ' bakiye başarıyla yüklendi!');
-      // URL temizle
-      window.history.replaceState({}, '', window.location.pathname);
-      // Bakiyeyi yenile
-      if(ME)loadBakiye();
-    }, 1000);
-  } else if(odeme === 'hata'){
-    setTimeout(()=>{
-      toast('Ödeme başarısız. Lütfen tekrar deneyin.');
-      window.history.replaceState({}, '', window.location.pathname);
-    }, 1000);
-  }
-}
 
-// PROFİL
 async function rProfil(){
   const fb=getFB();
   // Tüm alanları sıfırla
@@ -2884,6 +2852,24 @@ async function handleTalepFiles(input){
 }
 
 bootApp();
+
+function checkPaymentResult(){
+  const params = new URLSearchParams(window.location.search);
+  const odeme = params.get('odeme');
+  const miktar = params.get('miktar');
+  if(odeme === 'basarili' && miktar){
+    setTimeout(()=>{
+      toast(fmt(+miktar) + ' bakiye başarıyla yüklendi!');
+      window.history.replaceState({}, '', window.location.pathname);
+      if(ME)loadBakiye();
+    }, 1000);
+  } else if(odeme === 'hata'){
+    setTimeout(()=>{
+      toast('Ödeme başarısız. Lütfen tekrar deneyin.');
+      window.history.replaceState({}, '', window.location.pathname);
+    }, 1000);
+  }
+}
 checkPaymentResult();
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
