@@ -364,73 +364,139 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 <div id="v-landing">
   <nav class="l-nav">
     <div class="l-logo">emarkan<span>.</span></div>
-    <button class="l-nav-btn" onclick="showView('auth')">Giriş yap →</button>
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="l-nav-btn" style="background:transparent;color:var(--ink);border:1.5px solid var(--border)" onclick="showView('auth')">Giriş yap</button>
+      <button class="l-nav-btn" onclick="showView('auth')">Ücretsiz başla →</button>
+    </div>
   </nav>
+
+  <!-- HERO -->
   <section class="l-hero">
     <div class="l-hero-bg"></div>
-    <div class="l-eyebrow"><div class="l-eyebrow-dot"></div>Türkiye'nin tekstil B2B platformu</div>
-    <h1 class="l-h1">Markanız için doğru üretici.<br><em>Güvenle, hızla, dijitalde.</em></h1>
-    <p class="l-sub">Perakendeci markalar üretim talebi oluşturur, sertifikalı tekstil üreticileri teklif verir. Uçtan uca dijital süreç.</p>
+    <div class="l-eyebrow"><div class="l-eyebrow-dot"></div>Türkiye'nin tekstil ekosistemi</div>
+    <h1 class="l-h1">Markanızın ihtiyaç duyduğu<br><em>her hizmet, tek platformda.</em></h1>
+    <p class="l-sub">Üretici, kumaşçı, tasarımcı, fotoğrafçı ve daha fazlası. Tekstil markaları için uçtan uca tedarik zinciri çözümü.</p>
     <div class="l-btns">
       <button class="l-btn-p" onclick="showView('auth')">Hemen başla →</button>
-      <a href="#nasil" class="l-btn-s">Nasıl çalışır?</a>
+      <a href="#hizmetler" class="l-btn-s">Hizmetleri keşfet</a>
     </div>
     <div class="l-stats">
-      <div><div class="l-stat-v">100+</div><div class="l-stat-l">Sertifikalı üretici</div></div>
-      <div><div class="l-stat-v">Sabit</div><div class="l-stat-l">Teklif iletim ücreti</div></div>
+      <div><div class="l-stat-v">8+</div><div class="l-stat-l">Hizmet kategorisi</div></div>
       <div><div class="l-stat-v">0₺</div><div class="l-stat-l">Marka üyelik ücreti</div></div>
+      <div><div class="l-stat-v">Türkiye</div><div class="l-stat-l">Odaklı ekosistem</div></div>
     </div>
   </section>
-  <section class="l-sec l-sec-white" id="nasil">
-    <div style="max-width:1000px;margin:0 auto;text-align:center">
-      <div class="l-ey2">Süreç</div>
-      <h2 class="l-h2">Dört adımda üretim</h2>
-      <div class="l-steps">
-        <div class="l-step"><div class="l-step-n">01</div><div class="l-step-t">Talep oluştur</div><div class="l-step-d">Ürün türü, adet ve bütçeni gir. Tüm sertifikalı üreticilere iletilir.</div><span class="l-tag l-tag-m">Marka yapar</span></div>
-        <div class="l-step"><div class="l-step-n">02</div><div class="l-step-t">Teklif alındı</div><div class="l-step-d">Üreticiler fiyat ve teslimat süresiyle teklif gönderir. Sabit platform ücreti ödenir.</div><span class="l-tag l-tag-u">Üretici yapar</span></div>
-        <div class="l-step"><div class="l-step-n">03</div><div class="l-step-t">En iyi teklifi seç</div><div class="l-step-d">Teklifleri karşılaştır, uygununu kabul et. Sipariş oluşur.</div><span class="l-tag l-tag-b">İkisi birlikte</span></div>
-        <div class="l-step"><div class="l-step-n">04</div><div class="l-step-t">Üretim ve teslimat</div><div class="l-step-d">Üretimi platformdan takip et. Ödeme taraflar arasında belirlenir.</div><span class="l-tag l-tag-b">İkisi birlikte</span></div>
+
+  <!-- HİZMETLER -->
+  <section class="l-sec l-sec-white" id="hizmetler">
+    <div style="max-width:1100px;margin:0 auto;text-align:center">
+      <div class="l-ey2">Hizmet Kategorileri</div>
+      <h2 class="l-h2">İhtiyacınız olan her şey burada</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:2px;background:var(--border);border-radius:20px;overflow:hidden">
+        <div style="background:var(--white);padding:28px 24px">
+          <div style="font-size:32px;margin-bottom:12px">🏭</div>
+          <div style="font-size:16px;font-weight:500;color:var(--ink);margin-bottom:8px">Üretici</div>
+          <div style="font-size:13px;color:var(--ink3);line-height:1.6">Sertifikalı tekstil üreticileri. Fason üretim, özel koleksiyon ve toplu sipariş.</div>
+        </div>
+        <div style="background:var(--white);padding:28px 24px">
+          <div style="font-size:32px;margin-bottom:12px">🧵</div>
+          <div style="font-size:16px;font-weight:500;color:var(--ink);margin-bottom:8px">Kumaşçı</div>
+          <div style="font-size:13px;color:var(--ink3);line-height:1.6">Pamuk, keten, viskon ve daha fazlası. Toptan ve perakende kumaş tedariki.</div>
+        </div>
+        <div style="background:var(--white);padding:28px 24px">
+          <div style="font-size:32px;margin-bottom:12px">🏷️</div>
+          <div style="font-size:16px;font-weight:500;color:var(--ink);margin-bottom:8px">Etiket & Ambalaj</div>
+          <div style="font-size:13px;color:var(--ink3);line-height:1.6">Dokuma etiket, swing tag, ambalaj kutusu, poşet ve kurdele üretimi.</div>
+        </div>
+        <div style="background:var(--white);padding:28px 24px">
+          <div style="font-size:32px;margin-bottom:12px">🪡</div>
+          <div style="font-size:16px;font-weight:500;color:var(--ink);margin-bottom:8px">Aksesuarcı</div>
+          <div style="font-size:13px;color:var(--ink3);line-height:1.6">Düğme, fermuar, toka ve her türlü tekstil aksesuarı tedariki.</div>
+        </div>
+        <div style="background:var(--white);padding:28px 24px">
+          <div style="font-size:32px;margin-bottom:12px">📐</div>
+          <div style="font-size:16px;font-weight:500;color:var(--ink);margin-bottom:8px">Kalıpçı</div>
+          <div style="font-size:13px;color:var(--ink3);line-height:1.6">Profesyonel kalıp hazırlama, gradaj ve teknik çizim hizmetleri.</div>
+        </div>
+        <div style="background:var(--white);padding:28px 24px">
+          <div style="font-size:32px;margin-bottom:12px">🎨</div>
+          <div style="font-size:16px;font-weight:500;color:var(--ink);margin-bottom:8px">Tasarımcı</div>
+          <div style="font-size:13px;color:var(--ink3);line-height:1.6">Koleksiyon tasarımı, marka kimliği, baskı ve desen tasarım hizmetleri.</div>
+        </div>
+        <div style="background:var(--white);padding:28px 24px">
+          <div style="font-size:32px;margin-bottom:12px">📸</div>
+          <div style="font-size:16px;font-weight:500;color:var(--ink);margin-bottom:8px">Fotoğraf Stüdyosu</div>
+          <div style="font-size:13px;color:var(--ink3);line-height:1.6">Ürün fotoğrafı, lookbook, katalog ve sosyal medya çekimleri.</div>
+        </div>
+        <div style="background:var(--white);padding:28px 24px">
+          <div style="font-size:32px;margin-bottom:12px">💼</div>
+          <div style="font-size:16px;font-weight:500;color:var(--ink);margin-bottom:8px">Marka & Üretim Danışmanı</div>
+          <div style="font-size:13px;color:var(--ink3);line-height:1.6">Marka stratejisi, üretim süreç yönetimi ve tedarik zinciri danışmanlığı.</div>
+        </div>
       </div>
     </div>
   </section>
-  <section class="l-sec">
+
+  <!-- NASIL ÇALIŞIR -->
+  <section class="l-sec" id="nasil">
+    <div style="max-width:1000px;margin:0 auto;text-align:center">
+      <div class="l-ey2">Süreç</div>
+      <h2 class="l-h2">Dört adımda çözüm bulun</h2>
+      <div class="l-steps">
+        <div class="l-step"><div class="l-step-n">01</div><div class="l-step-t">Talep oluştur</div><div class="l-step-d">İhtiyacınız olan hizmeti seçin ve detayları girin. Tüm hizmet sağlayıcılara iletilir.</div><span class="l-tag l-tag-m">Marka yapar</span></div>
+        <div class="l-step"><div class="l-step-n">02</div><div class="l-step-t">Teklif alın</div><div class="l-step-d">İlgili hizmet sağlayıcılar fiyat ve süre belirterek teklif gönderir.</div><span class="l-tag l-tag-u">Hizmet veren yapar</span></div>
+        <div class="l-step"><div class="l-step-n">03</div><div class="l-step-t">En iyisini seçin</div><div class="l-step-d">Teklifleri karşılaştırın, mesajlaşın ve en uygun hizmet sağlayıcıyı seçin.</div><span class="l-tag l-tag-b">Birlikte</span></div>
+        <div class="l-step"><div class="l-step-n">04</div><div class="l-step-t">İşi tamamlayın</div><div class="l-step-d">Platform üzerinden iletişimde kalın, süreci takip edin.</div><span class="l-tag l-tag-b">Birlikte</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KİM İÇİN -->
+  <section class="l-sec l-sec-white">
     <div style="max-width:900px;margin:0 auto">
       <div class="l-ey2">Kim için?</div>
-      <h2 class="l-h2">İki taraf, tek platform</h2>
+      <h2 class="l-h2">İki taraf, tek ekosistem</h2>
       <div class="l-cards">
         <div class="l-cd"><div class="l-deco"></div>
-          <div class="l-clbl">Perakendeci Markalar</div>
-          <div class="l-ctitle">Doğru üreticiyi bulmak artık dakikalar alıyor.</div>
+          <div class="l-clbl">Tekstil Markaları</div>
+          <div class="l-ctitle">Tüm tedarik zincirini tek yerden yönetin.</div>
           <ul class="l-clist">
             <li><span class="l-chk-d">✓</span>Ücretsiz üyelik, sınırsız talep</li>
-            <li><span class="l-chk-d">✓</span>Sertifikalı, doğrulanmış üreticiler</li>
-            <li><span class="l-chk-d">✓</span>Birden fazla teklifi karşılaştır</li>
-            <li><span class="l-chk-d">✓</span>Uçtan uca sipariş takibi</li>
+            <li><span class="l-chk-d">✓</span>8 farklı hizmet kategorisi</li>
+            <li><span class="l-chk-d">✓</span>Doğrulanmış hizmet sağlayıcılar</li>
+            <li><span class="l-chk-d">✓</span>Güvenli mesajlaşma ve teklif sistemi</li>
           </ul>
           <button class="l-cbtn" onclick="showView('auth')">Marka olarak başla →</button>
         </div>
         <div class="l-cw"><div class="l-deco"></div>
-          <div class="l-clbl">Tekstil Üreticileri</div>
-          <div class="l-ctitle">Yeni markalarla tanış, kapasiteni doldur.</div>
+          <div class="l-clbl">Hizmet Sağlayıcılar</div>
+          <div class="l-ctitle">Markaların sizi bulmasını sağlayın.</div>
           <ul class="l-clist">
-            <li><span class="l-chk-w">✓</span>Gerçek alıcılardan gelen talepler</li>
-            <li><span class="l-chk-w">✓</span>Sadece ilgilendiğin taleplere teklif ver</li>
-            <li><span class="l-chk-w">✓</span>Dijital profil ve katalog oluştur</li>
-            <li><span class="l-chk-w">✓</span>Bakiye sistemiyle kolay teklif gönder</li>
+            <li><span class="l-chk-w">✓</span>Dijital profil ve katalog oluşturun</li>
+            <li><span class="l-chk-w">✓</span>Gerçek markalardan gelen talepler</li>
+            <li><span class="l-chk-w">✓</span>Sadece ilgilendiğiniz taleplere teklif verin</li>
+            <li><span class="l-chk-w">✓</span>Bakiye sistemiyle kolay teklif gönderin</li>
           </ul>
-          <button class="l-cbtn" onclick="showView('auth')">Üretici olarak başla →</button>
+          <button class="l-cbtn" onclick="showView('auth')">Hizmet veren olarak başla →</button>
         </div>
       </div>
     </div>
   </section>
+
+  <!-- FİYATLANDIRMA -->
   <section class="l-sec l-sec-dark" style="text-align:center">
     <div style="max-width:600px;margin:0 auto">
       <div class="l-ey2" style="color:rgba(196,149,106,.8)">Fiyatlandırma</div>
       <h2 style="font-family:'Playfair Display',serif;font-size:clamp(26px,4vw,42px);font-weight:600;color:var(--white);margin-bottom:16px">Sade ve şeffaf</h2>
-      <p style="font-size:17px;color:rgba(255,255,255,.5);margin-bottom:40px;font-weight:300;line-height:1.7">Markalar için tamamen ücretsiz. Üreticiler yalnızca teklif gönderdiklerinde sabit platform ücreti öder.</p>
+      <p style="font-size:17px;color:rgba(255,255,255,.5);margin-bottom:40px;font-weight:300;line-height:1.7">Markalar için tamamen ücretsiz. Hizmet sağlayıcılar yalnızca teklif gönderdiklerinde küçük bir platform ücreti öder.</p>
+      <div style="display:flex;gap:24px;justify-content:center;margin-bottom:40px;flex-wrap:wrap">
+        <div style="text-align:center"><div style="font-family:'Playfair Display',serif;font-size:36px;font-weight:600;color:#fff">0₺</div><div style="font-size:13px;color:rgba(255,255,255,.4)">Marka üyeliği</div></div>
+        <div style="text-align:center"><div style="font-family:'Playfair Display',serif;font-size:36px;font-weight:600;color:var(--warm)">85-250₺</div><div style="font-size:13px;color:rgba(255,255,255,.4)">Teklif başına ücret</div></div>
+      </div>
       <button class="l-btn-p" onclick="showView('auth')" style="background:var(--warm)">Ücretsiz başla</button>
     </div>
   </section>
+
   <footer class="l-footer">
     <div class="l-flogo">emarkan<span>.</span></div>
     <div style="display:flex;gap:20px;flex-wrap:wrap">
@@ -441,7 +507,6 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
     <div class="l-fcopy">© 2026 emarkan. Tüm hakları saklıdır.</div>
   </footer>
 </div>
-
 <!-- AUTH -->
 <div id="v-auth">
   <button class="auth-back" onclick="showView('landing')">← Ana sayfa</button>
@@ -471,11 +536,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
         <div id="hizmet-tip-wrap" style="display:none;margin-top:10px">
           <select id="hizmet-tip" style="width:100%;border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-family:inherit;font-size:14px;background:var(--white);color:var(--ink);outline:none">
             <option value="uretici">Üretici</option>
+            <option value="kumasci">Kumaşçı</option>
             <option value="etiket">Etiket & Ambalajcı</option>
+            <option value="aksesuarci">Aksesuarcı</option>
             <option value="kalipci">Kalıpçı</option>
             <option value="tasarimci">Tasarımcı</option>
-            <option value="kumasci">Kumaşçı</option>
-            <option value="aksesuarci">Aksesuarcı</option>
+            <option value="fotograf">Fotoğraf Stüdyosu</option>
+            <option value="danisman">Marka & Üretim Danışmanı</option>
             <option value="diger">Diğer</option>
           </select>
         </div>
@@ -560,11 +627,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
       <div class="fstrip">
         <button class="fpill on" id="ft-all" onclick="setHizmetFilter(null)">Tümü</button>
         <button class="fpill" id="ft-uretici" onclick="setHizmetFilter('uretici')">Üretici</button>
+        <button class="fpill" id="ft-kumasci" onclick="setHizmetFilter('kumasci')">Kumaşçı</button>
         <button class="fpill" id="ft-etiket" onclick="setHizmetFilter('etiket')">Etiket & Ambalaj</button>
+        <button class="fpill" id="ft-aksesuarci" onclick="setHizmetFilter('aksesuarci')">Aksesuarcı</button>
         <button class="fpill" id="ft-kalipci" onclick="setHizmetFilter('kalipci')">Kalıpçı</button>
         <button class="fpill" id="ft-tasarimci" onclick="setHizmetFilter('tasarimci')">Tasarımcı</button>
-        <button class="fpill" id="ft-kumasci" onclick="setHizmetFilter('kumasci')">Kumaşçı</button>
-        <button class="fpill" id="ft-aksesuarci" onclick="setHizmetFilter('aksesuarci')">Aksesuarcı</button>
+        <button class="fpill" id="ft-fotograf" onclick="setHizmetFilter('fotograf')">Fotoğraf Stüdyosu</button>
+        <button class="fpill" id="ft-danisman" onclick="setHizmetFilter('danisman')">Marka & Üretim Danışmanı</button>
       </div>
       <div style="padding:10px 20px 20px"><div id="plist"></div></div>
     </div>
@@ -697,57 +766,180 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 <!-- YENİ TALEP -->
 <div class="mov" id="m-yeni" onclick="if(event.target===this)cm('m-yeni')">
   <div class="modal">
-    <div class="mh">Üretim Talebi Oluştur</div>
-    <div class="ms">Tüm kayıtlı üreticiler görür ve teklif verebilir</div>
-    <!-- KATEGORİ SEÇİCİ -->
-    <div class="fl">
-      <label>Kategori</label>
-      <div id="nt-kat-pills" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
-      <input type="hidden" id="nt-kategori">
-    </div>
-    <div class="fl" id="nt-altkategori-wrap" style="display:none">
-      <label>Alt Kategori</label>
-      <div id="nt-altkat-pills" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
-      <input type="hidden" id="nt-altkategori">
-    </div>
-    <div class="fl"><label>Ürün Adı</label><input id="nt-urun" type="text" placeholder="örn. Organik pamuk tişört"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="fl"><label>Üretim Adeti</label><input id="nt-adet" type="number" placeholder="500" min="1"></div>
-      <div class="fl"><label>Beden Aralığı <span style="font-weight:400;color:var(--ink3);text-transform:none;font-size:10px">— opsiyonel</span></label><input id="nt-beden" type="text" placeholder="örn. XS-XL veya 0-6 ay"></div>
-    </div>
-    <div class="fl">
-      <label>Ortalama Teslim Zamanı</label>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
-        <button type="button" class="teslim-btn" onclick="setTeslim(this,'1_ay')" style="padding:10px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:inherit;font-size:13px;cursor:pointer;color:var(--ink3);transition:all .15s">📦 1 Ay İçinde</button>
-        <button type="button" class="teslim-btn" onclick="setTeslim(this,'2_ay')" style="padding:10px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:inherit;font-size:13px;cursor:pointer;color:var(--ink3);transition:all .15s">📦 2 Ay İçinde</button>
-        <button type="button" class="teslim-btn" onclick="setTeslim(this,'3_ay')" style="padding:10px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:inherit;font-size:13px;cursor:pointer;color:var(--ink3);transition:all .15s">📦 3 Ay İçinde</button>
-        <button type="button" class="teslim-btn" onclick="setTeslim(this,'sadece_uretici')" style="padding:10px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:inherit;font-size:13px;cursor:pointer;color:var(--ink3);transition:all .15s">🏭 Sadece Üretici</button>
+    <div class="mh">Talep Oluştur</div>
+    <div class="ms">Hizmet türünü seç, detayları gir</div>
+
+    <!-- ADIM 1: HİZMET TÜRÜ -->
+    <div id="talep-step-1">
+      <div class="fl">
+        <label>Hangi hizmete ihtiyacınız var?</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+          <button type="button" class="hizmet-sec-btn" onclick="selectTalepHizmet('uretici',this)" style="padding:12px 10px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:inherit;font-size:13px;cursor:pointer;color:var(--ink3);text-align:left;transition:all .15s">&#127981; Üretici</button>
+          <button type="button" class="hizmet-sec-btn" onclick="selectTalepHizmet('kumasci',this)" style="padding:12px 10px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:inherit;font-size:13px;cursor:pointer;color:var(--ink3);text-align:left;transition:all .15s">&#129525; Kumaşçı</button>
+          <button type="button" class="hizmet-sec-btn" onclick="selectTalepHizmet('etiket',this)" style="padding:12px 10px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:inherit;font-size:13px;cursor:pointer;color:var(--ink3);text-align:left;transition:all .15s">&#127991; Etiket & Ambalaj</button>
+          <button type="button" class="hizmet-sec-btn" onclick="selectTalepHizmet('aksesuarci',this)" style="padding:12px 10px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:inherit;font-size:13px;cursor:pointer;color:var(--ink3);text-align:left;transition:all .15s">&#129521; Aksesuarcı</button>
+          <button type="button" class="hizmet-sec-btn" onclick="selectTalepHizmet('kalipci',this)" style="padding:12px 10px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:inherit;font-size:13px;cursor:pointer;color:var(--ink3);text-align:left;transition:all .15s">&#128208; Kalıpçı</button>
+          <button type="button" class="hizmet-sec-btn" onclick="selectTalepHizmet('tasarimci',this)" style="padding:12px 10px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:inherit;font-size:13px;cursor:pointer;color:var(--ink3);text-align:left;transition:all .15s">&#127912; Tasarımcı</button>
+          <button type="button" class="hizmet-sec-btn" onclick="selectTalepHizmet('fotograf',this)" style="padding:12px 10px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:inherit;font-size:13px;cursor:pointer;color:var(--ink3);text-align:left;transition:all .15s">&#128247; Fotoğraf Stüdyosu</button>
+          <button type="button" class="hizmet-sec-btn" onclick="selectTalepHizmet('danisman',this)" style="padding:12px 10px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:inherit;font-size:13px;cursor:pointer;color:var(--ink3);text-align:left;transition:all .15s">&#128188; Marka & Üretim Danışmanı</button>
+        </div>
+        <input type="hidden" id="nt-hizmet-tip">
       </div>
-      <input type="hidden" id="nt-teslim">
     </div>
-    <div class="fl"><label>Bütçe (birim ₺) <span style="font-weight:400;color:var(--ink3);text-transform:none;font-size:10px">— opsiyonel</span></label><input id="nt-butce" type="number" placeholder="örn. 150"></div>
-    <div class="fl"><label>Notlar</label><textarea id="nt-not" placeholder="Kumaş türü, renk, özel istekler..."></textarea></div>
-    <div class="fl">
-      <label>Görseller <span style="font-weight:400;color:var(--ink3);text-transform:none;font-size:10px">— zorunlu, max 3</span></label>
-      <div class="upload-area" id="talep-upload-area" onclick="document.getElementById('talep-file').click()">
-        <input type="file" id="talep-file" accept="image/*" multiple onchange="handleTalepFiles(this)">
-        <div style="font-size:13px;color:var(--ink3)">+ Görsel ekle (max 3)</div>
-        <div style="font-size:11px;color:var(--ink3);margin-top:3px">JPG, PNG, WEBP</div>
+
+    <!-- ADIM 2: HİZMETE ÖZEL ALANLAR -->
+    <div id="talep-step-2" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+        <button onclick="document.getElementById('talep-step-1').style.display='';document.getElementById('talep-step-2').style.display='none'" style="background:var(--cream2);border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px;color:var(--ink3);font-family:inherit">← Geri</button>
+        <span id="talep-hizmet-badge" style="font-size:13px;font-weight:500;color:var(--ink)"></span>
       </div>
-      <div class="upload-preview" id="talep-preview"></div>
+
+      <!-- ÜRETİCİ -->
+      <div id="fields-uretici" style="display:none">
+        <div class="fl"><label>Kategori</label><div id="nt-kat-pills" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div><input type="hidden" id="nt-kategori"></div>
+        <div class="fl" id="nt-altkategori-wrap" style="display:none"><label>Alt Kategori</label><div id="nt-altkat-pills" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div><input type="hidden" id="nt-altkategori"></div>
+        <div class="fl"><label>Ürün Adı</label><input id="nt-urun" type="text" placeholder="örn. Organik pamuk tişört"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fl"><label>Üretim Adeti</label><input id="nt-adet" type="number" placeholder="500" min="1"></div>
+          <div class="fl"><label>Beden Aralığı</label><input id="nt-beden" type="text" placeholder="XS-XL veya 0-6 ay"></div>
+        </div>
+        <div class="fl"><label>Teslim Zamanı</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+            <button type="button" class="teslim-btn" onclick="setTeslim(this,'1_ay')" style="padding:9px;border:1.5px solid var(--border);border-radius:10px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">1 Ay İçinde</button>
+            <button type="button" class="teslim-btn" onclick="setTeslim(this,'2_ay')" style="padding:9px;border:1.5px solid var(--border);border-radius:10px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">2 Ay İçinde</button>
+            <button type="button" class="teslim-btn" onclick="setTeslim(this,'3_ay')" style="padding:9px;border:1.5px solid var(--border);border-radius:10px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">3 Ay İçinde</button>
+            <button type="button" class="teslim-btn" onclick="setTeslim(this,'sadece_uretici')" style="padding:9px;border:1.5px solid var(--border);border-radius:10px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Sadece Üretici</button>
+          </div>
+          <input type="hidden" id="nt-teslim">
+        </div>
+      </div>
+
+      <!-- KUMAŞÇI -->
+      <div id="fields-kumasci" style="display:none">
+        <div class="fl"><label>Kumaş Türü</label><input id="nt-kumas-tur" type="text" placeholder="örn. Pamuk, Keten, Viskon, Denim..."></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fl"><label>Miktar</label><input id="nt-kumas-miktar" type="number" placeholder="500"></div>
+          <div class="fl"><label>Birim</label>
+            <select id="nt-kumas-birim" style="width:100%;border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-family:inherit;font-size:14px;outline:none">
+              <option value="metre">Metre</option><option value="kg">Kilogram</option><option value="top">Top</option>
+            </select>
+          </div>
+        </div>
+        <div class="fl"><label>Renk / Desen Tercihi</label><input id="nt-kumas-renk" type="text" placeholder="örn. Lacivert düz, beyaz çizgili..."></div>
+      </div>
+
+      <!-- ETİKET -->
+      <div id="fields-etiket" style="display:none">
+        <div class="fl"><label>Etiket / Ambalaj Tipi</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px" id="etiket-tip-wrap">
+            <button type="button" class="etiket-tip-btn" onclick="toggleChip(this,'nt-etiket-tip')" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Dokuma Etiket</button>
+            <button type="button" class="etiket-tip-btn" onclick="toggleChip(this,'nt-etiket-tip')" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Baskılı Etiket</button>
+            <button type="button" class="etiket-tip-btn" onclick="toggleChip(this,'nt-etiket-tip')" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Swing Tag</button>
+            <button type="button" class="etiket-tip-btn" onclick="toggleChip(this,'nt-etiket-tip')" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Ambalaj Kutusu</button>
+            <button type="button" class="etiket-tip-btn" onclick="toggleChip(this,'nt-etiket-tip')" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Poşet</button>
+            <button type="button" class="etiket-tip-btn" onclick="toggleChip(this,'nt-etiket-tip')" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Bant / Kurdele</button>
+          </div>
+          <input type="hidden" id="nt-etiket-tip">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fl"><label>Adet</label><input id="nt-etiket-adet" type="number" placeholder="1000"></div>
+          <div class="fl"><label>Malzeme</label><input id="nt-etiket-malzeme" type="text" placeholder="örn. Kuşe, Kraft..."></div>
+        </div>
+      </div>
+
+      <!-- AKSESUARCI -->
+      <div id="fields-aksesuarci" style="display:none">
+        <div class="fl"><label>Aksesuar Türü</label><input id="nt-aksesuar-tur" type="text" placeholder="örn. Düğme, fermuar, toka..."></div>
+        <div class="fl"><label>Adet</label><input id="nt-aksesuar-adet" type="number" placeholder="500"></div>
+        <div class="fl"><label>Malzeme / Renk</label><input id="nt-aksesuar-detay" type="text" placeholder="örn. Metal gümüş, plastik siyah..."></div>
+      </div>
+
+      <!-- KALIPCI -->
+      <div id="fields-kalipci" style="display:none">
+        <div class="fl"><label>Ürün Tipi</label><input id="nt-kalip-urun" type="text" placeholder="örn. Elbise, pantolon, ceket..."></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fl"><label>Beden Aralığı</label><input id="nt-kalip-beden" type="text" placeholder="örn. XS-XL"></div>
+          <div class="fl"><label>Kalıp Sayısı</label><input id="nt-kalip-sayi" type="number" placeholder="1"></div>
+        </div>
+      </div>
+
+      <!-- TASARIMCI -->
+      <div id="fields-tasarimci" style="display:none">
+        <div class="fl"><label>Tasarım Türü</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+            <button type="button" class="tasarim-tip-btn" onclick="toggleChip(this,'nt-tasarim-tip')" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Koleksiyon Tasarımı</button>
+            <button type="button" class="tasarim-tip-btn" onclick="toggleChip(this,'nt-tasarim-tip')" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Logo & Marka Kimliği</button>
+            <button type="button" class="tasarim-tip-btn" onclick="toggleChip(this,'nt-tasarim-tip')" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Baskı & Desen</button>
+            <button type="button" class="tasarim-tip-btn" onclick="toggleChip(this,'nt-tasarim-tip')" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Ambalaj Tasarımı</button>
+          </div>
+          <input type="hidden" id="nt-tasarim-tip">
+        </div>
+        <div class="fl"><label>Referans Stil</label><input id="nt-tasarim-referans" type="text" placeholder="örn. Minimalist, bohem, streetwear..."></div>
+      </div>
+
+      <!-- FOTOĞRAF -->
+      <div id="fields-fotograf" style="display:none">
+        <div class="fl"><label>Çekim Türü</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+            <button type="button" class="fotograf-tip-btn" onclick="toggleChip(this,'nt-fotograf-tip')" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Ürün Fotoğrafı</button>
+            <button type="button" class="fotograf-tip-btn" onclick="toggleChip(this,'nt-fotograf-tip')" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Lookbook</button>
+            <button type="button" class="fotograf-tip-btn" onclick="toggleChip(this,'nt-fotograf-tip')" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Katalog</button>
+            <button type="button" class="fotograf-tip-btn" onclick="toggleChip(this,'nt-fotograf-tip')" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Sosyal Medya</button>
+          </div>
+          <input type="hidden" id="nt-fotograf-tip">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fl"><label>Ürün Sayısı</label><input id="nt-fotograf-urun" type="number" placeholder="10"></div>
+          <div class="fl"><label>Model</label>
+            <select id="nt-fotograf-model" style="width:100%;border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-family:inherit;font-size:14px;outline:none">
+              <option value="">Seçin</option><option value="modelsiz">Modelsiz</option><option value="1_model">1 Model</option><option value="2_model">2 Model</option><option value="3+_model">3+ Model</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- DANIŞMAN -->
+      <div id="fields-danisman" style="display:none">
+        <div class="fl"><label>Danışmanlık Türü</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+            <button type="button" class="danisman-tip-btn" onclick="toggleChip(this,'nt-danisman-tip')" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Marka Stratejisi</button>
+            <button type="button" class="danisman-tip-btn" onclick="toggleChip(this,'nt-danisman-tip')" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Üretim Süreç Yönetimi</button>
+            <button type="button" class="danisman-tip-btn" onclick="toggleChip(this,'nt-danisman-tip')" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Tedarik Zinciri</button>
+            <button type="button" class="danisman-tip-btn" onclick="toggleChip(this,'nt-danisman-tip')" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3)">Koleksiyon Planlama</button>
+          </div>
+          <input type="hidden" id="nt-danisman-tip">
+        </div>
+        <div class="fl"><label>Süre</label>
+          <select id="nt-danisman-sure" style="width:100%;border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-family:inherit;font-size:14px;outline:none">
+            <option value="">Belirtmek istemiyorum</option><option value="1_seans">Tek Seans</option><option value="1_ay">1 Aylık</option><option value="3_ay">3 Aylık</option><option value="surekli">Sürekli</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ORTAK ALANLAR -->
+      <div class="fl" style="margin-top:4px"><label>Notlar <span style="font-weight:400;color:var(--ink3);font-size:10px">opsiyonel</span></label><textarea id="nt-not" placeholder="Ek detaylar, özel istekler..."></textarea></div>
+      <div class="fl"><label>Bütçe (₺) <span style="font-weight:400;color:var(--ink3);font-size:10px">opsiyonel</span></label><input id="nt-butce" type="number" placeholder="örn. 5000"></div>
+      <div class="fl">
+        <label>Görseller <span style="font-weight:400;color:var(--ink3);font-size:10px">opsiyonel, max 3</span></label>
+        <div class="upload-area" id="talep-upload-area" onclick="document.getElementById('talep-file').click()">
+          <input type="file" id="talep-file" accept="image/*" multiple onchange="handleTalepFiles(this)">
+          <div style="font-size:13px;color:var(--ink3)">+ Görsel ekle (max 3)</div>
+          <div style="font-size:11px;color:var(--ink3);margin-top:3px">JPG, PNG, WEBP</div>
+        </div>
+        <div class="upload-preview" id="talep-preview"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;background:var(--cream2);border-radius:12px;padding:12px">
+        <input type="checkbox" id="nt-tel-paylash" style="width:18px;height:18px;cursor:pointer;accent-color:var(--teal);flex-shrink:0">
+        <label for="nt-tel-paylash" style="font-size:13px;color:var(--ink2);cursor:pointer;line-height:1.5">
+          Telefon numaram görünsün
+          <div style="font-size:11px;color:var(--ink3);margin-top:2px">Profilimdeki telefon numarası paylaşılır</div>
+        </label>
+      </div>
+      <button class="btn btn-teal" id="yeni-submit-btn" onclick="subTalep()">Talebi Yayınla</button>
+      <button class="btn btn-ghost" style="margin-top:8px" onclick="cm('m-yeni')">İptal</button>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;background:var(--cream2);border-radius:12px;padding:12px">
-      <input type="checkbox" id="nt-tel-paylash" style="width:18px;height:18px;cursor:pointer;accent-color:var(--teal);flex-shrink:0">
-      <label for="nt-tel-paylash" style="font-size:13px;color:var(--ink2);cursor:pointer;line-height:1.5">
-        Telefon numaram teklif veren üreticilere görünsün
-        <div style="font-size:11px;color:var(--ink3);margin-top:2px">Profilimdeki telefon numarası paylaşılır</div>
-      </label>
-    </div>
-    <button class="btn btn-teal" id="yeni-submit-btn" onclick="subTalep()">Talebi Yayınla</button>
-    <button class="btn btn-ghost" style="margin-top:8px" onclick="cm('m-yeni')">İptal</button>
   </div>
 </div>
-
 <!-- TEKLİF -->
 <div class="mov" id="m-teklif" onclick="if(event.target===this)cm('m-teklif')">
   <div class="modal">
@@ -1059,11 +1251,13 @@ function maskMarka(ad){
 
 const HIZMET_LABELS = {
   'uretici': 'Üretici',
+  'kumasci': 'Kumaşçı',
   'etiket': 'Etiket & Ambalajcı',
+  'aksesuarci': 'Aksesuarcı',
   'kalipci': 'Kalıpçı',
   'tasarimci': 'Tasarımcı',
-  'kumasci': 'Kumaşçı',
-  'aksesuarci': 'Aksesuarcı',
+  'fotograf': 'Fotoğraf Stüdyosu',
+  'danisman': 'Marka & Üretim Danışmanı',
   'diger': 'Diğer'
 };
 function getHizmetLabel(tip){ return HIZMET_LABELS[tip]||'Hizmet Sağlayıcı'; }
@@ -1407,17 +1601,23 @@ function startApp(){
   document.getElementById('tal-title').textContent=m?'Üretim Taleplerim':'Açık Talepler';
   if(!m){
     loadBakiye();
-    // Üretici profili dolu mu kontrol et
     const profilDolu = PROFILE.firma_adi && PROFILE.konum && PROFILE.aciklama;
     if(!profilDolu){
       gp('profil');
       setTimeout(()=>toast('Lütfen önce profilinizi doldurun'),500);
     } else {
-      gp('dash');
+      let lastPage = 'dash';
+      try{lastPage=localStorage.getItem('emarkan_page')||'dash';}catch(e){}
+      // Geçersiz sayfa ise dash'e dön
+      if(!['dash','tal','msg','profil'].includes(lastPage))lastPage='dash';
+      gp(lastPage);
     }
   } else {
-    gp('dash');
-    rProducers();
+    let lastPage = 'dash';
+    try{lastPage=localStorage.getItem('emarkan_page')||'dash';}catch(e){}
+    if(!['dash','pazar','tal','msg','profil'].includes(lastPage))lastPage='dash';
+    gp(lastPage);
+    if(lastPage==='pazar'||lastPage==='dash')rProducers();
   }
 }
 
@@ -1428,6 +1628,7 @@ function gp(id){
   document.getElementById('pg-'+id).classList.add('on');
   const ni=document.getElementById('ni-'+id);if(ni)ni.classList.add('on');
   const si=document.getElementById('si-'+id);if(si)si.classList.add('on');
+  try{localStorage.setItem('emarkan_page',id);}catch(e){}
   if(id==='dash')rDash();
   if(id==='tal')rTalepler();
   if(id==='msg')rMesajlar();
@@ -1486,7 +1687,7 @@ let _hizmetFilter = null;
 function setHizmetFilter(tip){
   _hizmetFilter = tip;
   document.getElementById('ft-all').classList.toggle('on', !tip);
-  ['uretici','etiket','kalipci','tasarimci','kumasci','aksesuarci'].forEach(t=>{
+  ['uretici','kumasci','etiket','aksesuarci','kalipci','tasarimci','fotograf','danisman'].forEach(t=>{
     const btn=document.getElementById('ft-'+t);
     if(btn)btn.classList.toggle('on', t===tip);
   });
@@ -1741,31 +1942,118 @@ async function rDash(){
 
 // YENİ TALEP
 function openNewTalep(){
-  ['nt-urun','nt-adet','nt-butce','nt-not','nt-beden','nt-kategori','nt-altkategori','nt-teslim'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); const telCb=document.getElementById('nt-tel-paylash');if(telCb)telCb.checked=false; initTalepUpload();
-  buildKategoriPills();
-  const altWrap=document.getElementById('nt-altkategori-wrap');if(altWrap)altWrap.style.display='none';
-  document.getElementById('nt-teslim').value='';
-  document.querySelectorAll('.teslim-btn').forEach(b=>{b.style.background='var(--white)';b.style.color='var(--ink3)';b.style.borderColor='var(--border)';});
+  // Tüm alanları sıfırla
+  ['nt-urun','nt-adet','nt-butce','nt-not','nt-beden','nt-kategori','nt-altkategori','nt-teslim',
+   'nt-hizmet-tip','nt-kumas-tur','nt-kumas-miktar','nt-kumas-renk','nt-etiket-tip','nt-etiket-adet',
+   'nt-etiket-malzeme','nt-aksesuar-tur','nt-aksesuar-adet','nt-aksesuar-detay','nt-kalip-urun',
+   'nt-kalip-beden','nt-kalip-sayi','nt-tasarim-tip','nt-tasarim-referans','nt-fotograf-tip',
+   'nt-fotograf-urun','nt-danisman-tip','nt-danisman-sure'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  // Tüm chip butonlarını sıfırla
+  document.querySelectorAll('.teslim-btn,.hizmet-sec-btn,.etiket-tip-btn,.tasarim-tip-btn,.fotograf-tip-btn,.danisman-tip-btn').forEach(b=>{
+    b.style.background='var(--white)';b.style.color='var(--ink3)';b.style.borderColor='var(--border)';
+  });
+  const telCb=document.getElementById('nt-tel-paylash');if(telCb)telCb.checked=false;
+  initTalepUpload();
+  // Adım 1'e dön
+  document.getElementById('talep-step-1').style.display='';
+  document.getElementById('talep-step-2').style.display='none';
   om('m-yeni');
 }
+
+function selectTalepHizmet(tip, btn){
+  // Butonları sıfırla
+  document.querySelectorAll('.hizmet-sec-btn').forEach(b=>{
+    b.style.background='var(--white)';b.style.color='var(--ink3)';b.style.borderColor='var(--border)';
+  });
+  btn.style.background='var(--ink)';btn.style.color='#fff';btn.style.borderColor='var(--ink)';
+  document.getElementById('nt-hizmet-tip').value=tip;
+  // Adım 2'ye geç
+  document.getElementById('talep-step-1').style.display='none';
+  document.getElementById('talep-step-2').style.display='';
+  document.getElementById('talep-hizmet-badge').textContent=btn.textContent.trim();
+  // Tüm field gruplarını gizle
+  ['uretici','kumasci','etiket','aksesuarci','kalipci','tasarimci','fotograf','danisman'].forEach(t=>{
+    const el=document.getElementById('fields-'+t);
+    if(el)el.style.display='none';
+  });
+  // İlgili alanı göster
+  const fields=document.getElementById('fields-'+tip);
+  if(fields)fields.style.display='';
+  // Üretici ise kategori pilllerini başlat
+  if(tip==='uretici')buildKategoriPills();
+}
+
+function toggleChip(btn, hiddenId){
+  const wasSelected = btn.style.background==='var(--teal)';
+  // Tek seçim - önce hepsini sıfırla
+  btn.closest('div').querySelectorAll('button').forEach(b=>{
+    b.style.background='var(--white)';b.style.color='var(--ink3)';b.style.borderColor='var(--border)';
+  });
+  if(!wasSelected){
+    btn.style.background='var(--teal)';btn.style.color='#fff';btn.style.borderColor='var(--teal)';
+    document.getElementById(hiddenId).value=btn.textContent.trim();
+  } else {
+    document.getElementById(hiddenId).value='';
+  }
+}
+
 async function subTalep(){
   const fb=getFB();
-  const urun=document.getElementById('nt-urun').value.trim();
-  const adet=+document.getElementById('nt-adet').value;
-  const kategori=document.getElementById('nt-kategori').value;
-  if(!urun||!adet){toast('Ürün türü ve adet zorunlu');return;}
-  if(!kategori){toast('Lütfen kategori seçin');return;}
-  if(window._talepGorseller.length===0){toast('En az 1 görsel eklemelisiniz');return;}
+  const hizmetTip=document.getElementById('nt-hizmet-tip').value;
+  if(!hizmetTip){toast('Lütfen hizmet türü seçin');return;}
+  // Hizmet tipine göre zorunlu alan kontrolü
+  let urun='', adet=0;
+  if(hizmetTip==='uretici'){
+    urun=document.getElementById('nt-urun').value.trim();
+    adet=+document.getElementById('nt-adet').value;
+    if(!urun||!adet){toast('Ürün adı ve adet zorunlu');return;}
+  } else if(hizmetTip==='kumasci'){
+    urun=document.getElementById('nt-kumas-tur').value.trim();
+    adet=+document.getElementById('nt-kumas-miktar').value;
+    if(!urun||!adet){toast('Kumaş türü ve miktar zorunlu');return;}
+  } else if(hizmetTip==='etiket'){
+    urun=document.getElementById('nt-etiket-tip').value||'Etiket & Ambalaj';
+    adet=+document.getElementById('nt-etiket-adet').value||0;
+  } else if(hizmetTip==='aksesuarci'){
+    urun=document.getElementById('nt-aksesuar-tur').value.trim();
+    adet=+document.getElementById('nt-aksesuar-adet').value||0;
+    if(!urun){toast('Aksesuar türü zorunlu');return;}
+  } else if(hizmetTip==='kalipci'){
+    urun=document.getElementById('nt-kalip-urun').value.trim();
+    adet=+document.getElementById('nt-kalip-sayi').value||1;
+    if(!urun){toast('Ürün tipi zorunlu');return;}
+  } else if(hizmetTip==='tasarimci'){
+    urun=document.getElementById('nt-tasarim-tip').value||'Tasarım';
+    adet=1;
+  } else if(hizmetTip==='fotograf'){
+    urun=document.getElementById('nt-fotograf-tip').value||'Fotoğraf Çekimi';
+    adet=+document.getElementById('nt-fotograf-urun').value||1;
+  } else if(hizmetTip==='danisman'){
+    urun=document.getElementById('nt-danisman-tip').value||'Danışmanlık';
+    adet=1;
+  }
+  if(!urun)urun=getHizmetLabel(hizmetTip);
   const btn=document.getElementById('yeni-submit-btn');
   btn.disabled=true;btn.textContent='Yayınlanıyor...';
   try{
     const gorseller=[...window._talepGorseller];
     await fb.addDoc(fb.collection(fb.db,'talepler'),{
       user_id:ME.uid,marka_adi:PROFILE.name,urun,adet,
-      kategori:document.getElementById('nt-kategori').value||null,
-      alt_kategori:document.getElementById('nt-altkategori').value||null,
-      beden:document.getElementById('nt-beden').value||null,
-      teslim_suresi_tip:document.getElementById('nt-teslim').value||null,
+      hizmet_tipi:hizmetTip,
+      kategori:document.getElementById('nt-kategori')?.value||null,
+      alt_kategori:document.getElementById('nt-altkategori')?.value||null,
+      beden:document.getElementById('nt-beden')?.value||null,
+      teslim_suresi_tip:document.getElementById('nt-teslim')?.value||null,
+      kumas_birim:document.getElementById('nt-kumas-birim')?.value||null,
+      kumas_renk:document.getElementById('nt-kumas-renk')?.value||null,
+      etiket_malzeme:document.getElementById('nt-etiket-malzeme')?.value||null,
+      aksesuar_detay:document.getElementById('nt-aksesuar-detay')?.value||null,
+      kalip_beden:document.getElementById('nt-kalip-beden')?.value||null,
+      tasarim_referans:document.getElementById('nt-tasarim-referans')?.value||null,
+      fotograf_model:document.getElementById('nt-fotograf-model')?.value||null,
+      danisman_sure:document.getElementById('nt-danisman-sure')?.value||null,
       tarih:document.getElementById('nt-tarih')?.value||null,
       butce:+document.getElementById('nt-butce').value||null,
       notlar:document.getElementById('nt-not').value,
