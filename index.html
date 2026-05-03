@@ -566,7 +566,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
         <button class="fpill" id="ft-kumasci" onclick="setHizmetFilter('kumasci')">Kumaşçı</button>
         <button class="fpill" id="ft-aksesuarci" onclick="setHizmetFilter('aksesuarci')">Aksesuarcı</button>
       </div>
-      <div style="padding:10px 16px 16px"><div class="plist-grid" id="plist"></div></div>
+      <div style="padding:10px 20px 20px"><div id="plist"></div></div>
     </div>
 
     <!-- TALEPLER -->
@@ -1526,13 +1526,13 @@ function filterProducers(){
 
   if(!list.length){el.innerHTML='<div class="empty"><div class="empty-t">Sonuç bulunamadı</div></div>';return;}
   
-  el.innerHTML='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">' + list.map(p=>{
+  el.innerHTML='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:start">' + list.map(p=>{
     const name=p.firma_adi||p.name||'Üretici';
     const av=name.substring(0,2).toUpperCase();
     const kats=p.urun_kategorileri||[];
     const serts=p.sertifikalar||[];
     return`<div style="cursor:pointer">
-      <div style="position:relative;border-radius:14px;overflow:hidden;background:#1A2E28;aspect-ratio:1/1" onclick="openProducerById('${p.id}')">
+      <div style="position:relative;border-radius:14px;overflow:hidden;background:#1A2E28;aspect-ratio:4/3" onclick="openProducerById('${p.id}')">
         ${p.kapak_url?`<img src="${p.kapak_url}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`:''}
         <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,.7))"></div>
         <div style="position:absolute;top:10px;left:10px">
@@ -1546,7 +1546,7 @@ function filterProducers(){
       </div>
       <div style="padding:10px 2px 4px">
         <div style="font-size:13px;color:var(--ink3);margin-bottom:5px">${p.konum||''}${p.moq?' · Min. '+p.moq+' adet':''}</div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;max-height:52px;overflow:hidden">
           ${kats.slice(0,3).map(k=>`<span style="font-size:11px;padding:2px 7px;border-radius:20px;background:var(--teal-l);color:var(--teal);font-weight:500">${k.includes('>')?k.split('>')[1].trim():k}</span>`).join('')}
           ${kats.length>3?`<span style="font-size:11px;color:var(--ink3)">+${kats.length-3}</span>`:''}
         </div>
