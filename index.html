@@ -994,12 +994,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
       <button class="btn btn-ghost" style="padding:11px;font-size:14px" onclick="document.getElementById('bakiye-amt').value=5000">₺5.000</button>
     </div>
     <div class="fl"><label>Yüklenecek tutar (₺)</label><input class="cinput" id="bakiye-amt" type="number" placeholder="örn. 1000" min="100"></div>
+    <div class="fl"><label>Kart Sahibi Adı</label><input class="cinput" id="b-ch" type="text" placeholder="Ad Soyad"></div>
     <div class="fl"><label>Kart numarası</label><input class="cinput" id="b-cn" type="text" placeholder="4242 4242 4242 4242" maxlength="19" oninput="fcard(this)"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="fl"><label>Son kullanma</label><input class="cinput" id="b-ce" type="text" placeholder="AA/YY" maxlength="5" oninput="fexp(this)"></div>
       <div class="fl"><label>CVV</label><input class="cinput" id="b-cv" type="text" placeholder="123" maxlength="3"></div>
     </div>
-    <div style="font-size:11px;color:var(--ink3);text-align:center;margin-bottom:12px;opacity:.7">Test modu · Gerçek ödeme alınmaz</div>
+    <div style="font-size:11px;color:var(--ink3);text-align:center;margin-bottom:12px;opacity:.7">256-bit SSL şifreleme · iyzico güvencesiyle</div>
     <button class="btn btn-teal" id="bakiye-btn" onclick="doBakiyeYukle()">Bakiye Yükle</button>
     <button class="btn btn-ghost" style="margin-top:8px" onclick="cm('m-bakiye')">İptal</button>
   </div>
@@ -2525,25 +2526,49 @@ async function loadBakiye(){
 async function doBakiyeYukle(){
   const fb=getFB();
   const amt=+document.getElementById('bakiye-amt').value;
-  const cn=document.getElementById('b-cn').value.replace(/\s/g,'');
+  const cn=document.getElementById('b-cn').value;
   const ce=document.getElementById('b-ce').value;
   const cv=document.getElementById('b-cv').value;
+  const ch=document.getElementById('b-ch')?.value||'Kart Sahibi';
   if(!amt||amt<100){toast('Minimum yükleme ₺100');return;}
-  if(cn.length<16||ce.length<5||cv.length<3){toast('Kart bilgilerini eksiksiz girin');return;}
+  if(cn.replace(/\s/g,'').length<16){toast('Kart numarası hatalı');return;}
+  if(ce.length<5){toast('Son kullanma tarihi hatalı');return;}
+  if(cv.length<3){toast('CVV hatalı');return;}
   const btn=document.getElementById('bakiye-btn');
-  btn.disabled=true;btn.textContent='Yükleniyor...';
-  setTimeout(async()=>{
-    try{
+  btn.disabled=true;btn.innerHTML='<span style="display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px"></span>İşleniyor...';
+  try{
+    const [expMonth, expYear] = ce.split('/');
+    const response = await fetch('/api/bakiye-yukle', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        cardNumber: cn,
+        expireMonth: expMonth?.trim(),
+        expireYear: '20' + expYear?.trim(),
+        cvc: cv,
+        cardHolderName: ch,
+        amount: amt,
+        userId: ME.uid,
+        email: ME.email
+      })
+    });
+    const data = await response.json();
+    if(data.success){
       const yeni=(PROFILE.bakiye||0)+amt;
       await fb.updateDoc(fb.doc(fb.db,'profiles',ME.uid),{bakiye:yeni});
       PROFILE.bakiye=yeni;
       document.getElementById('bakiye-val').textContent=yeni.toLocaleString('tr-TR');
-      cm('m-bakiye');toast(fmt(amt)+' bakiye yüklendi!');
-      ['bakiye-amt','b-cn','b-ce','b-cv'].forEach(id=>document.getElementById(id).value='');
+      cm('m-bakiye');
+      toast(fmt(amt)+' bakiye başarıyla yüklendi!');
+      ['bakiye-amt','b-cn','b-ce','b-cv'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
       rDash();
-    }catch(e){toast('Hata: '+e.message);}
-    btn.disabled=false;btn.textContent='Bakiye Yükle';
-  },1400);
+    } else {
+      toast('Ödeme başarısız: '+(data.error||'Bilinmeyen hata'));
+    }
+  }catch(e){
+    toast('Bağlantı hatası: '+e.message);
+  }
+  btn.disabled=false;btn.textContent='Bakiye Yükle';
 }
 
 // PROFİL
