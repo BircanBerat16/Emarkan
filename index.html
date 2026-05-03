@@ -2576,7 +2576,7 @@ async function doBakiyeYukle(){
       document.body.appendChild(popup);
       toast('Bankanızın güvenlik sayfasına yönlendiriliyorsunuz...');
     } else {
-      toast('Hata: '+(data.error||'?')+' Kod:'+(data.errorCode||'?')+' Grup:'+(data.errorGroup||'?'));
+      toast(JSON.stringify(data).substring(0,200));
     }
   }catch(e){
     toast('Bağlantı hatası: '+e.message);
