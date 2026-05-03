@@ -346,6 +346,18 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
   <div class="spin"></div>
 </div>
 
+
+<!-- ADMIN -->
+<div id="v-admin" style="display:none;min-height:100dvh;background:var(--cream2)">
+  <div style="background:var(--ink);padding:16px 24px;display:flex;align-items:center;justify-content:space-between">
+    <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:600;color:#fff">emarkan <span style="color:var(--warm);font-size:13px;font-weight:400">Admin</span></div>
+    <button onclick="doLogout()" style="background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);padding:7px 16px;border-radius:20px;cursor:pointer;font-family:inherit;font-size:13px">Çıkış</button>
+  </div>
+  <div style="max-width:1100px;margin:0 auto;padding:24px 16px" id="admin-content">
+    <div style="text-align:center;color:var(--ink3);padding:40px">Yükleniyor...</div>
+  </div>
+</div>
+
 <!-- LANDING -->
 <div id="v-landing">
   <nav class="l-nav">
@@ -1022,9 +1034,9 @@ function fmtD(ts){if(!ts)return'—';const d=ts.toDate?ts.toDate():new Date(ts);
 
 // VIEW
 function showView(v){
-  ['landing','auth','app'].forEach(id=>{
+  ['landing','auth','app','admin'].forEach(id=>{
     const el=document.getElementById('v-'+id);
-    if(el)el.style.display=id===v?(id==='app'?'flex':id==='auth'?'flex':'block'):'none';
+    if(el)el.style.display=id===v?(id==='app'?'flex':id==='auth'?'flex':id==='admin'?'block':'block'):'none';
   });
   document.getElementById('v-loading').style.display='none';
   if(v==='landing')window.scrollTo(0,0);
@@ -1114,10 +1126,188 @@ async function loadSession(user){
   }catch(e){
     PROFILE={id:user.uid,name:user.email.split('@')[0],role:'marka',bakiye:0};
   }
-  showView('app');
-  startApp();
+  if(ME.email==='bircan@cambeltekstil.com'){
+    showView('admin');
+    startAdmin();
+  } else {
+    showView('app');
+    startApp();
+  }
 }
 
+
+async function startAdmin(){
+  showView('admin');
+  const fb=getFB();
+  const el=document.getElementById('admin-content');
+  el.innerHTML='<div style="text-align:center;color:var(--ink3);padding:40px">Veriler yükleniyor...</div>';
+
+  try{
+    // Tüm verileri paralel çek
+    const [profilesSnap, taleplerSnap, tekliflerSnap, siparislerSnap] = await Promise.all([
+      fb.getDocs(fb.collection(fb.db,'profiles')),
+      fb.getDocs(fb.collection(fb.db,'talepler')),
+      fb.getDocs(fb.collection(fb.db,'teklifler')),
+      fb.getDocs(fb.collection(fb.db,'siparisler'))
+    ]);
+
+    const profiles = profilesSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const talepler = taleplerSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const teklifler = tekliflerSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const siparisler = siparislerSnap.docs.map(d=>({id:d.id,...d.data()}));
+
+    const markalar = profiles.filter(p=>p.role==='marka');
+    const hizmetVerenler = profiles.filter(p=>p.role==='uretici');
+    const platformCirosu = teklifler.reduce((a,t)=>a+(t.fee||0),0);
+
+    // Hizmet veren tipi dağılımı
+    const hizmetTipleri = {};
+    hizmetVerenler.forEach(p=>{
+      const tip=getHizmetLabel(p.hizmet_tipi||'uretici');
+      hizmetTipleri[tip]=(hizmetTipleri[tip]||0)+1;
+    });
+
+    // En çok teklif veren hizmet verenler
+    const teklifSayilari = {};
+    teklifler.forEach(t=>{
+      teklifSayilari[t.uretici_adi]=(teklifSayilari[t.uretici_adi]||0)+1;
+    });
+    const topUreticiler = Object.entries(teklifSayilari)
+      .sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+    // Hizmet veren bazlı platform geliri
+    const ureticiGelir = {};
+    teklifler.forEach(t=>{
+      ureticiGelir[t.uretici_adi]=(ureticiGelir[t.uretici_adi]||0)+(t.fee||0);
+    });
+    const topGelir = Object.entries(ureticiGelir)
+      .sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+    // Kategori dağılımı
+    const katDagilim = {};
+    talepler.forEach(t=>{
+      if(t.kategori)katDagilim[t.kategori]=(katDagilim[t.kategori]||0)+1;
+    });
+
+    // Son kayıt olan kullanıcılar (5 adet)
+    const sonKayitlar = [...profiles]
+      .filter(p=>p.createdAt)
+      .sort((a,b)=>{
+        const ta=a.createdAt?.seconds||0;
+        const tb=b.createdAt?.seconds||0;
+        return tb-ta;
+      }).slice(0,8);
+
+    el.innerHTML = `
+    <!-- STAT KARTLARI -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px">
+      ${[
+        {l:'Toplam Marka',v:markalar.length,c:'var(--warm)'},
+        {l:'Hizmet Veren',v:hizmetVerenler.length,c:'var(--teal)'},
+        {l:'Toplam Talep',v:talepler.length,c:'var(--ink)'},
+        {l:'Toplam Teklif',v:teklifler.length,c:'var(--ink)'},
+        {l:'Platform Cirosu',v:fmt(platformCirosu),c:'#27AE60'},
+        {l:'Aktif Sipariş',v:siparisler.filter(s=>s.status!=='delivered').length,c:'var(--ink)'},
+      ].map(s=>`
+        <div style="background:var(--white);border-radius:14px;padding:16px;box-shadow:var(--shadow)">
+          <div style="font-size:11px;color:var(--ink3);margin-bottom:6px">${s.l}</div>
+          <div style="font-size:24px;font-weight:600;color:${s.c};font-family:'Playfair Display',serif">${s.v}</div>
+        </div>`).join('')}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+      <!-- Hizmet Veren Tipleri -->
+      <div style="background:var(--white);border-radius:14px;padding:18px;box-shadow:var(--shadow)">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:14px">Hizmet Veren Tipleri</div>
+        ${Object.entries(hizmetTipleri).map(([tip,sayi])=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px;color:var(--ink2)">${tip}</span>
+          <span style="font-size:13px;font-weight:600;color:var(--teal)">${sayi}</span>
+        </div>`).join('')}
+        ${Object.keys(hizmetTipleri).length===0?'<div style="color:var(--ink3);font-size:13px;text-align:center;padding:12px">Henüz kayıt yok</div>':''}
+      </div>
+
+      <!-- Kategori Dağılımı -->
+      <div style="background:var(--white);border-radius:14px;padding:18px;box-shadow:var(--shadow)">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:14px">Talep Kategorileri</div>
+        ${Object.entries(katDagilim).sort((a,b)=>b[1]-a[1]).map(([kat,sayi])=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px;color:var(--ink2)">${kat}</span>
+          <span style="font-size:13px;font-weight:600;color:var(--warm2)">${sayi}</span>
+        </div>`).join('')}
+        ${Object.keys(katDagilim).length===0?'<div style="color:var(--ink3);font-size:13px;text-align:center;padding:12px">Henüz talep yok</div>':''}
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+      <!-- En Çok Teklif Veren -->
+      <div style="background:var(--white);border-radius:14px;padding:18px;box-shadow:var(--shadow)">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:14px">En Çok Teklif Veren</div>
+        ${topUreticiler.map(([ad,sayi],i)=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;font-weight:700;color:var(--ink3);width:16px">${i+1}</span>
+            <span style="font-size:13px;color:var(--ink2)">${ad}</span>
+          </div>
+          <span style="font-size:13px;font-weight:600;color:var(--teal)">${sayi} teklif</span>
+        </div>`).join('')}
+        ${topUreticiler.length===0?'<div style="color:var(--ink3);font-size:13px;text-align:center;padding:12px">Henüz teklif yok</div>':''}
+      </div>
+
+      <!-- En Çok Gelir Getiren -->
+      <div style="background:var(--white);border-radius:14px;padding:18px;box-shadow:var(--shadow)">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:14px">En Çok Gelir Getiren</div>
+        ${topGelir.map(([ad,gelir],i)=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;font-weight:700;color:var(--ink3);width:16px">${i+1}</span>
+            <span style="font-size:13px;color:var(--ink2)">${ad}</span>
+          </div>
+          <span style="font-size:13px;font-weight:600;color:#27AE60">${fmt(gelir)}</span>
+        </div>`).join('')}
+        ${topGelir.length===0?'<div style="color:var(--ink3);font-size:13px;text-align:center;padding:12px">Henüz gelir yok</div>':''}
+      </div>
+    </div>
+
+    <!-- Son Kayıt Olan Kullanıcılar -->
+    <div style="background:var(--white);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-bottom:24px">
+      <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:14px">Son Kayıt Olan Kullanıcılar</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead>
+            <tr style="border-bottom:2px solid var(--border)">
+              <th style="text-align:left;padding:8px;color:var(--ink3);font-weight:500">Firma</th>
+              <th style="text-align:left;padding:8px;color:var(--ink3);font-weight:500">Email</th>
+              <th style="text-align:left;padding:8px;color:var(--ink3);font-weight:500">Rol</th>
+              <th style="text-align:left;padding:8px;color:var(--ink3);font-weight:500">Tip</th>
+              <th style="text-align:left;padding:8px;color:var(--ink3);font-weight:500">Tarih</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sonKayitlar.map(p=>`
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:10px 8px;font-weight:500;color:var(--ink)">${p.firma_adi||p.name||'—'}</td>
+              <td style="padding:10px 8px;color:var(--ink3)">${p.email||'—'}</td>
+              <td style="padding:10px 8px">
+                <span style="background:${p.role==='marka'?'var(--warm-l)':'var(--teal-l)'};color:${p.role==='marka'?'var(--warm2)':'var(--teal)'};padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500">${p.role==='marka'?'Marka':'Hizmet'}</span>
+              </td>
+              <td style="padding:10px 8px;color:var(--ink3);font-size:12px">${getHizmetLabel(p.hizmet_tipi||p.role)}</td>
+              <td style="padding:10px 8px;color:var(--ink3);font-size:12px">${p.createdAt?fmtD(p.createdAt):'—'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:8px">
+      <button onclick="startAdmin()" style="background:var(--ink);color:#fff;border:none;padding:10px 24px;border-radius:20px;cursor:pointer;font-family:inherit;font-size:13px">↻ Yenile</button>
+    </div>`;
+
+  }catch(e){
+    el.innerHTML='<div style="text-align:center;color:var(--red);padding:40px">Hata: '+e.message+'</div>';
+    console.error(e);
+  }
+}
 async function bootApp(){
   // Wait for Firebase module to load
   let tries=0;
@@ -1133,7 +1323,8 @@ async function bootApp(){
       if(user){await loadSession(user);}
       else{showView('landing');}
     } else {
-      if(!user){ME=null;PROFILE=null;showView('landing');}
+      // Sadece gerçekten çıkış yapıldıysa landing'e at
+      if(!user && ME){ME=null;PROFILE=null;showView('landing');}
     }
   });
 }
