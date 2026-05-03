@@ -292,7 +292,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 @media(max-width:767px){#tal-list{grid-template-columns:repeat(2,1fr)!important;gap:12px!important}}
 
 /* AIRBNB STYLE PRODUCER CARDS */
-.plist-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:0}
+.plist-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:0}
 .pcard{background:var(--white);border:none;border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;margin-bottom:0;box-shadow:none}
 .pcard:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,23,20,.1)}
 .pcard:active{transform:translateY(0)}
@@ -301,7 +301,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
 .pbanner-rating{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.5);border-radius:20px;padding:4px 10px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--white);display:flex;align-items:center;gap:3px}
 .pbody{padding:12px 4px 4px}
 .pbody-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px}
-.pbody-name{font-weight:600;font-size:14px;color:var(--ink)}
+.pbody-name{font-weight:600;font-size:13px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pbody-rating{font-size:13px;font-weight:500;color:var(--ink);display:flex;align-items:center;gap:3px}
 .pbody-loc{font-size:13px;color:var(--ink3);margin-bottom:6px}
 .pbody-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
@@ -330,7 +330,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
   .sheet{max-width:580px;left:50%;right:auto;width:580px;transform:translateX(-50%) translateY(100%);border-radius:18px 18px 0 0}
   .sheet.on{transform:translateX(-50%) translateY(0)}
   #bnav{justify-content:center}.ni{max-width:100px}
-  .plist-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}.pcard{margin-bottom:0}
+  .plist-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.pcard{margin-bottom:0}
   .dash-hero{border-radius:14px;margin:16px 0 0}
   .l-cards{grid-template-columns:1fr 1fr}
 }
@@ -1533,7 +1533,7 @@ function filterProducers(){
     const serts=p.sertifikalar||[];
     const bg=p.kapak_url?'#1A2E28':'#1A2E28';
     return`<div class="pcard" onclick="openProducerById('${p.id}')">
-      <div class="pbanner" style="background:linear-gradient(145deg,#1A2E28,#0D1A14);position:relative;height:200px">
+      <div class="pbanner" style="background:linear-gradient(145deg,#1A2E28,#0D1A14);position:relative;height:180px;overflow:hidden">
         ${p.kapak_url?`<img src="${p.kapak_url}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`:''}
         <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(0,0,0,.6))"></div>
         <div style="position:absolute;top:12px;left:12px;display:flex;gap:5px;flex-wrap:wrap;max-width:calc(100% - 24px)">
@@ -1546,9 +1546,9 @@ function filterProducers(){
           <div style="color:#fff;font-weight:600;font-size:14px;text-shadow:0 1px 3px rgba(0,0,0,.5)">${name}</div>
         </div>
       </div>
-      <div class="pbody">
+      <div class="pbody" style="padding:10px 8px 6px">
         <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
-          ${kats.slice(0,4).map(k=>`<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:var(--teal-l);color:var(--teal);font-weight:500">${k.includes('›')?k.split('›')[1].trim():k}</span>`).join('')}
+          ${kats.slice(0,3).map(k=>`<span style="font-size:11px;padding:2px 7px;border-radius:20px;background:var(--teal-l);color:var(--teal);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;display:inline-block">${k.includes('›')?k.split('›')[1].trim():k.length>12?k.substring(0,12)+'...':k}</span>`).join('')}
           ${kats.length>4?`<span style="font-size:11px;color:var(--ink3)">+${kats.length-4}</span>`:''}
         </div>
         <div style="font-size:12px;color:var(--ink3);display:flex;gap:12px">
