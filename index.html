@@ -704,23 +704,34 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
   <div class="modal">
     <div class="mh">Üretim Talebi Oluştur</div>
     <div class="ms">Tüm kayıtlı üreticiler görür ve teklif verebilir</div>
+    <!-- KATEGORİ SEÇİCİ -->
     <div class="fl">
       <label>Kategori</label>
-      <select id="nt-kategori" onchange="buildKategoriSelect('nt-kategori','nt-altkategori');this.dispatchEvent(new Event('change'))">
-        <option value="">Kategori seçin</option>
-      </select>
+      <div id="nt-kat-pills" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
+      <input type="hidden" id="nt-kategori">
     </div>
     <div class="fl" id="nt-altkategori-wrap" style="display:none">
-      <label>Alt kategori</label>
-      <select id="nt-altkategori"></select>
+      <label>Alt Kategori</label>
+      <div id="nt-altkat-pills" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
+      <input type="hidden" id="nt-altkategori">
     </div>
-    <div class="fl"><label>Ürün açıklaması</label><input id="nt-urun" type="text" placeholder="örn. Organik pamuk tişört"></div>
+    <div class="fl"><label>Ürün Adı</label><input id="nt-urun" type="text" placeholder="örn. Organik pamuk tişört"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="fl"><label>Adet</label><input id="nt-adet" type="number" placeholder="500" min="1"></div>
-      <div class="fl"><label>Teslim tarihi</label><input id="nt-tarih" type="date"></div>
+      <div class="fl"><label>Üretim Adeti</label><input id="nt-adet" type="number" placeholder="500" min="1"></div>
+      <div class="fl"><label>Beden Aralığı <span style="font-weight:400;color:var(--ink3);text-transform:none;font-size:10px">— opsiyonel</span></label><input id="nt-beden" type="text" placeholder="örn. XS-XL veya 0-6 ay"></div>
+    </div>
+    <div class="fl">
+      <label>Ortalama Teslim Zamanı</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+        <button type="button" class="teslim-btn" onclick="setTeslim(this,'1_ay')" style="padding:10px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:inherit;font-size:13px;cursor:pointer;color:var(--ink3);transition:all .15s">📦 1 Ay İçinde</button>
+        <button type="button" class="teslim-btn" onclick="setTeslim(this,'2_ay')" style="padding:10px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:inherit;font-size:13px;cursor:pointer;color:var(--ink3);transition:all .15s">📦 2 Ay İçinde</button>
+        <button type="button" class="teslim-btn" onclick="setTeslim(this,'3_ay')" style="padding:10px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:inherit;font-size:13px;cursor:pointer;color:var(--ink3);transition:all .15s">📦 3 Ay İçinde</button>
+        <button type="button" class="teslim-btn" onclick="setTeslim(this,'sadece_uretici')" style="padding:10px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:inherit;font-size:13px;cursor:pointer;color:var(--ink3);transition:all .15s">🏭 Sadece Üretici</button>
+      </div>
+      <input type="hidden" id="nt-teslim">
     </div>
     <div class="fl"><label>Bütçe (birim ₺) <span style="font-weight:400;color:var(--ink3);text-transform:none;font-size:10px">— opsiyonel</span></label><input id="nt-butce" type="number" placeholder="örn. 150"></div>
-    <div class="fl"><label>Notlar</label><textarea id="nt-not" placeholder="Kumaş türü, beden aralığı, renk..."></textarea></div>
+    <div class="fl"><label>Notlar</label><textarea id="nt-not" placeholder="Kumaş türü, renk, özel istekler..."></textarea></div>
     <div class="fl">
       <label>Görseller <span style="font-weight:400;color:var(--ink3);text-transform:none;font-size:10px">— zorunlu, max 3</span></label>
       <div class="upload-area" id="talep-upload-area" onclick="document.getElementById('talep-file').click()">
@@ -991,6 +1002,60 @@ function buildKategoriSelect(selId,subId){
 }
 
 
+
+function buildKategoriPills(){
+  const wrap = document.getElementById('nt-kat-pills');
+  if(!wrap) return;
+  wrap.innerHTML = Object.keys(KATEGORILER).map(k=>`
+    <button type="button" onclick="selectKat('${k}')" data-kat="${k}" style="padding:7px 14px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3);transition:all .15s;white-space:nowrap">${k}</button>
+  `).join('');
+}
+
+function selectKat(kat){
+  // Ana kategori seç
+  document.querySelectorAll('#nt-kat-pills button').forEach(b=>{
+    const isSelected = b.dataset.kat === kat;
+    b.style.background = isSelected ? 'var(--ink)' : 'var(--white)';
+    b.style.color = isSelected ? '#fff' : 'var(--ink3)';
+    b.style.borderColor = isSelected ? 'var(--ink)' : 'var(--border)';
+  });
+  document.getElementById('nt-kategori').value = kat;
+  document.getElementById('nt-altkategori').value = '';
+  // Alt kategoriler
+  const alts = KATEGORILER[kat] || [];
+  const altWrap = document.getElementById('nt-altkategori-wrap');
+  const altPills = document.getElementById('nt-altkat-pills');
+  if(alts.length){
+    altPills.innerHTML = alts.map(a=>`
+      <button type="button" onclick="selectAltKat('${a}')" data-alt="${a}" style="padding:6px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:inherit;font-size:12px;cursor:pointer;color:var(--ink3);transition:all .15s;white-space:nowrap">${a}</button>
+    `).join('');
+    altWrap.style.display = '';
+  } else {
+    altWrap.style.display = 'none';
+  }
+}
+
+function selectAltKat(alt){
+  document.querySelectorAll('#nt-altkat-pills button').forEach(b=>{
+    const isSelected = b.dataset.alt === alt;
+    b.style.background = isSelected ? 'var(--teal)' : 'var(--white)';
+    b.style.color = isSelected ? '#fff' : 'var(--ink3)';
+    b.style.borderColor = isSelected ? 'var(--teal)' : 'var(--border)';
+  });
+  document.getElementById('nt-altkategori').value = alt;
+}
+
+function setTeslim(btn, val){
+  document.querySelectorAll('.teslim-btn').forEach(b=>{
+    b.style.background = 'var(--white)';
+    b.style.color = 'var(--ink3)';
+    b.style.borderColor = 'var(--border)';
+  });
+  btn.style.background = 'var(--ink)';
+  btn.style.color = '#fff';
+  btn.style.borderColor = 'var(--ink)';
+  document.getElementById('nt-teslim').value = val;
+}
 function maskMarka(ad){
   if(!ad) return '***';
   if(ad.length<=2) return ad+'***';
@@ -1691,10 +1756,11 @@ async function rDash(){
 
 // YENİ TALEP
 function openNewTalep(){
-  ['nt-urun','nt-adet','nt-tarih','nt-butce','nt-not'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); const telCb=document.getElementById('nt-tel-paylash');if(telCb)telCb.checked=false; initTalepUpload();
-  buildKategoriSelect('nt-kategori','nt-altkategori');
-  const wrap=document.getElementById('nt-altkategori-wrap');if(wrap)wrap.style.display='none';
-  document.getElementById('nt-kategori').onchange=function(){const wrap=document.getElementById('nt-altkategori-wrap');if(wrap)wrap.style.display=this.value?'':'none'; buildKategoriSelect('nt-kategori','nt-altkategori'); this.dispatchEvent(new Event('change'));};
+  ['nt-urun','nt-adet','nt-tarih','nt-butce','nt-not','nt-beden','nt-kategori','nt-altkategori','nt-teslim'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); const telCb=document.getElementById('nt-tel-paylash');if(telCb)telCb.checked=false; initTalepUpload();
+  buildKategoriPills();
+  const altWrap=document.getElementById('nt-altkategori-wrap');if(altWrap)altWrap.style.display='none';
+  document.getElementById('nt-teslim').value='';
+  document.querySelectorAll('.teslim-btn').forEach(b=>{b.style.background='var(--white)';b.style.color='var(--ink3)';b.style.borderColor='var(--border)';});
   om('m-yeni');
 }
 async function subTalep(){
@@ -1713,6 +1779,8 @@ async function subTalep(){
       user_id:ME.uid,marka_adi:PROFILE.name,urun,adet,
       kategori:document.getElementById('nt-kategori').value||null,
       alt_kategori:document.getElementById('nt-altkategori').value||null,
+      beden:document.getElementById('nt-beden').value||null,
+      teslim_suresi_tip:document.getElementById('nt-teslim').value||null,
       tarih:document.getElementById('nt-tarih').value||null,
       butce:+document.getElementById('nt-butce').value||null,
       notlar:document.getElementById('nt-not').value,
