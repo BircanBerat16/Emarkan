@@ -460,7 +460,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
       <div class="fl"><label>Firma adı</label><input id="rn" type="text" placeholder="Firma / marka adınız"></div>
       <div class="fl"><label>Email</label><input id="re" type="email" placeholder="email@firma.com"></div>
       <div class="fl"><label>Şifre</label><input id="rp" type="password" placeholder="Min. 6 karakter"></div>
-      <div class="fl"><label>Telefon <span style="font-weight:400;color:var(--ink3);text-transform:none;font-size:10px">— opsiyonel</span></label><input id="rtel" type="tel" placeholder="+90 5xx xxx xx xx"></div>
+      <div class="fl"><label>Telefon</label><input id="rtel" type="tel" placeholder="+90 5xx xxx xx xx"></div>
       <div class="fl"><label>Rolünüz</label>
         <div class="rpick">
           <button class="ropt on" id="ro-m" onclick="pickRole('marka')">Marka / Alıcı</button>
@@ -1085,7 +1085,8 @@ async function doReg(){
   err.textContent='';
   const onay=document.getElementById('sozlesme-onay');
   if(!onay||!onay.checked){err.textContent='Lütfen kullanım koşullarını kabul edin';return;}
-  if(!name||!email||!pass){err.textContent='Tüm alanlar zorunlu';return;}
+  const tel=document.getElementById('rtel')?.value.trim();
+  if(!name||!email||!pass||!tel){err.textContent='Tüm alanlar zorunlu (telefon dahil)';return;}
   if(pass.length<6){err.textContent='Şifre en az 6 karakter';return;}
   btn.disabled=true;btn.textContent='Kayıt olunuyor...';
   try{
@@ -1344,8 +1345,20 @@ function startApp(){
   document.getElementById('ni-profil').style.display='';
   document.getElementById('bakiye-chip').style.display=m?'none':'';
   document.getElementById('tal-title').textContent=m?'Üretim Taleplerim':'Açık Talepler';
-  if(!m)loadBakiye();
-  gp('dash');if(m)rProducers();
+  if(!m){
+    loadBakiye();
+    // Üretici profili dolu mu kontrol et
+    const profilDolu = PROFILE.firma_adi && PROFILE.konum && PROFILE.aciklama;
+    if(!profilDolu){
+      gp('profil');
+      setTimeout(()=>toast('Lütfen önce profilinizi doldurun'),500);
+    } else {
+      gp('dash');
+    }
+  } else {
+    gp('dash');
+    rProducers();
+  }
 }
 
 function gp(id){
