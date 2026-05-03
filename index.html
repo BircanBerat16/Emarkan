@@ -988,6 +988,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream2);color:v
     <div class="mh">Bakiye Yükle</div>
     <div class="ms">Her teklif için bakiyenizden düşülür</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      <button class="btn btn-ghost" style="padding:11px;font-size:14px" onclick="document.getElementById('bakiye-amt').value=10">₺10</button>
       <button class="btn btn-ghost" style="padding:11px;font-size:14px" onclick="document.getElementById('bakiye-amt').value=100">₺100</button>
       <button class="btn btn-ghost" style="padding:11px;font-size:14px" onclick="document.getElementById('bakiye-amt').value=500">₺500</button>
       <button class="btn btn-ghost" style="padding:11px;font-size:14px" onclick="document.getElementById('bakiye-amt').value=1000">₺1.000</button>
@@ -2530,7 +2531,7 @@ async function doBakiyeYukle(){
   const ce=document.getElementById('b-ce').value;
   const cv=document.getElementById('b-cv').value;
   const ch=document.getElementById('b-ch')?.value||'Kart Sahibi';
-  if(!amt||amt<100){toast('Minimum yükleme ₺100');return;}
+  if(!amt||amt<10){toast('Minimum yükleme ₺10');return;}
   if(cn.replace(/\s/g,'').length<16){toast('Kart numarası hatalı');return;}
   if(ce.length<5){toast('Son kullanma tarihi hatalı');return;}
   if(cv.length<3){toast('CVV hatalı');return;}
@@ -2575,7 +2576,7 @@ async function doBakiyeYukle(){
       document.body.appendChild(popup);
       toast('Bankanızın güvenlik sayfasına yönlendiriliyorsunuz...');
     } else {
-      toast('Ödeme başarısız: '+(data.error||'Bilinmeyen hata'));
+      toast('Hata: '+(data.error||'?')+' Kod:'+(data.errorCode||'?')+' Grup:'+(data.errorGroup||'?'));
     }
   }catch(e){
     toast('Bağlantı hatası: '+e.message);
